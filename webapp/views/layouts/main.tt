@@ -1,6 +1,7 @@
 <html>
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>" />
+  <script src="3pp/jquery/jquery.min.js"></script>
   <title>Y Journal</title>
 </head>
 <body>
