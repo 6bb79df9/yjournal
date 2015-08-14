@@ -1,0 +1,9 @@
+<html>
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>" />
+  <title>Y Journal</title>
+</head>
+<body>
+  <% content %>
+</body>
+</html>
