@@ -1,0 +1,2 @@
+<script src="js/item.js"></script>
+<div ng-app="item" ng-view></div>

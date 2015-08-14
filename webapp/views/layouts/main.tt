@@ -6,9 +6,13 @@
   <script src="3pp/jquery/jquery.min.js"></script>
   <script src="3pp/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="3pp/angular/angular.min.js"></script>
+  <script src="3pp/angular/angular-resource.min.js"></script>
+  <script src="3pp/angular/angular-route.min.js"></script>
   <title>Y Journal</title>
 </head>
 <body>
-  <% content %>
+  <div class="container">
+    <% content %>
+  </div>
 </body>
 </html>

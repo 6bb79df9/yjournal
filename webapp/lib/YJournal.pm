@@ -43,7 +43,7 @@ del '/api/item/:id.:format' => sub {
     or return $ret;
 };
 
-get '/api/items.:format' => sub {
+get '/api/item.:format' => sub {
   my ($ret, $error) = YJournal::Item::query($dbh);
   defined($error)
     and send_error $error
