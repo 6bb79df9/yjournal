@@ -5,6 +5,7 @@
   <link rel="stylesheet" href="3pp/bootstrap/dist/css/bootstrap-theme.min.css">
   <script src="3pp/jquery/jquery.min.js"></script>
   <script src="3pp/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="3pp/angular/angular.min.js"></script>
   <title>Y Journal</title>
 </head>
 <body>
