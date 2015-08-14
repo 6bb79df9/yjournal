@@ -13,6 +13,8 @@ sub new {
   my $class = shift;
   ref($class) and $class = ref($class);
   my $obj = {@_};
+  defined($obj->{time}) && ref($obj->{time}) eq ''
+    and $obj->{time} = DateTime::Format::ISO8601->parse_datetime($obj->{time});
   my $default = {
     id => $uuid->create_str(),
     time => DateTime->now(),
@@ -143,6 +145,28 @@ sub delete {
     $id) or $rollback->($dbh, undef, "Couldn't delete attribute:" . $dbh->errstr);
   $dbh->commit;
   1;
+}
+
+sub query {
+  my $dbh = shift;
+  $dbh->begin_work;
+  my $rows = $dbh->selectall_arrayref(q{
+    SELECT item.id AS id, item.time as time, content.content AS content
+    FROM item
+    LEFT JOIN content ON item.cid=content.id;
+    },
+    {Slice => {}}) or $rollback->($dbh, undef, "Couldn't load item list:" . $dbh->errstr);
+  $dbh->commit;
+  [map {YJournal::Item->new(%$_);} @$rows];
+}
+
+sub TO_JSON {
+  my $self = shift;
+  return {
+    id => $self->id(),
+    time => $self->time()->iso8601(),
+    content => $self->content(),
+  };
 }
 
 1;

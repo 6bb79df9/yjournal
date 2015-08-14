@@ -28,4 +28,9 @@ template: "simple"
 
 # For session support enable the following line and see Dancer::Session
 # session: "YAML"
+engines:
+  JSON:
+    allow_blessed: '1'
+    canonical: '1'
+    convert_blessed: '1'
 
