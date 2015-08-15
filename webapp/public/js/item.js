@@ -1,4 +1,4 @@
-angular.module('item', ['ngRoute'])
+angular.module('item', ['ngRoute', 'ui.codemirror'])
 
 .config(function($routeProvider) {
   $routeProvider
