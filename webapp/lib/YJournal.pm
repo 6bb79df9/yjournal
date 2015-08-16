@@ -4,6 +4,7 @@ use Dancer::Plugin::REST;
 use Dancer::Plugin::Database;
 use YJournal::DB;
 use YJournal::Item;
+use YJournal::Attribute;
 
 our $VERSION = '0.1';
 
@@ -45,6 +46,62 @@ del '/api/item/:id.:format' => sub {
 
 get '/api/item.:format' => sub {
   my ($ret, $error) = YJournal::Item::query($dbh);
+  defined($error)
+    and send_error $error
+    or return $ret;
+};
+
+post '/api/item/:id/a/:type/:name.:format' => sub {
+  my ($ret, $error) = YJournal::Attribute::create(
+    $dbh,
+    params->{id},
+    params->{type},
+    params->{name},
+    params->{content});
+  defined($error)
+    and send_error $error
+    or return $ret;
+};
+
+get '/api/item/:id/a/:type/:name.:format' => sub {
+  my ($ret, $error) = YJournal::Attribute::retrieve(
+    $dbh,
+    params->{id},
+    params->{type},
+    params->{name});
+  defined($error)
+    and send_error $error
+    or return $ret;
+};
+
+put '/api/item/:id/a/:type/:name.:format' => sub {
+  my ($ret, $error) = YJournal::Attribute::update(
+    $dbh,
+    params->{id},
+    params->{type},
+    params->{name},
+    params->{content});
+  defined($error)
+    and send_error $error
+    or return $ret;
+};
+
+del '/api/item/:id/a/:type/:name.:format' => sub {
+  my ($ret, $error) = YJournal::Attribute::delete(
+    $dbh,
+    params->{id},
+    params->{type},
+    params->{name});
+  defined($error)
+    and send_error $error
+    or return $ret;
+};
+
+get '/api/item/:id/a/:type.:format' => sub {
+  my ($ret, $error) = YJournal::Attribute::query(
+    $dbh,
+    params->{id},
+    params->{type});
   defined($error)
     and send_error $error
     or return $ret;

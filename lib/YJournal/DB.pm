@@ -16,7 +16,8 @@ sub init {
     CREATE TABLE IF NOT EXISTS item (
       id TEXT NOT NULL UNIQUE,
       time TEXT NOT NULL,
-      cid TEXT NOT NULL
+      cid TEXT NOT NULL,
+      PRIMARY KEY(id)
     );
     }) or confess ("Couldn't create item table:" . $dbh->errstr);
 
@@ -24,7 +25,8 @@ sub init {
   $dbh->do(q{
     CREATE TABLE IF NOT EXISTS content (
       id TEXT NOT NULL UNIQUE,
-      content BLOB NOT NULL
+      content BLOB NOT NULL,
+      PRIMARY KEY(id)
     );
     }) or confess ("Couldn't create content table:" . $dbh->errstr);
 
@@ -32,14 +34,21 @@ sub init {
   $dbh->do(q{
     CREATE TABLE IF NOT EXISTS attribute (
       id TEXT NOT NULL,
-      name TEXT NOT NULL,
       type TEXT NOT NULL,
-      value BLOB NOT NULL,
-      PRIMARY KEY (id, name)
+      name TEXT NOT NULL,
+      ctype TEXT NOT NULL,
+      cid TEXT NOT NULL,
+      PRIMARY KEY(id, type, name)
     );
     }) or confess ("Couldn't create attribute table" . $dbh->errstr);
 
   return $dbh;
+}
+
+sub rollback {
+  my $dbh = shift;
+  $dbh->rollback;
+  wantarray ? @_ : $_;
 }
 
 1;

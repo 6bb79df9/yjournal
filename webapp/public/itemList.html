@@ -4,9 +4,10 @@
   </form>
   <table>
     <tr ng-repeat="item in itemList.items">
-      <td><a class="text-danger glyphicon glyphicon-remove" ng-click="itemList.remove(item.id)" href="#"></a></td>
+      <td><a class="text-danger glyphicon glyphicon-remove-circle" ng-click="itemList.remove(item.id)" href="#" style="padding-right:3px"></a></td>
       <td>
         <a data-toggle="tooltip" title={{item.time}} href="#/edit/{{item.id}}">{{itemList.title(item)}}</a>
+        <span class="badge" ng-repeat="tag in item.tags" style="background-color:{{tag.name.colorCode()}}">{{tag.name}}</span>
       </td>
     </tr>
   </table>

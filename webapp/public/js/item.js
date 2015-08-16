@@ -1,3 +1,15 @@
+String.prototype.colorCode = function() {
+  var hash = 0, i, chr, len;
+  if (this.length == 0) return hash;
+  for (i = 0, len = this.length; i < len; i++) {
+    chr   = this.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  hash = (hash & 0xffffff) | 0x404040;
+  return '#' + hash.toString(16);
+};
+
 angular.module('item', ['ngRoute', 'ui.codemirror'])
 
 .config(function($routeProvider) {
@@ -89,9 +101,35 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   };
 })
 
-.controller('ItemListController', function(Items, items) {
+.service('Attributes', function($http, $q) {
+  var self = this;
+
+  self.retrieve = function(id) {
+    var deferred = $q.defer();
+
+    $http.get('/api/item/' + id + '/a/' + 'tag.json')
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
+})
+
+.controller('ItemListController', function(Items, Attributes, items) {
   var itemList = this;
   itemList.items = items;
+
+  for (i in items) {
+    var item = items[i];
+    item.tags = [];
+    Attributes.retrieve(item.id)
+      .then(function(tags) {
+        item.tags = tags;
+      });
+  }
 
   itemList.title = function(item) {
     var m = item.content.match(/^\s*([^\r\n]+)/);
