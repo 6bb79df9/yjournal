@@ -3,12 +3,34 @@
   <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>" />
   <link rel="stylesheet" href="3pp/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="3pp/bootstrap/dist/css/bootstrap-theme.min.css">
-  <script src="3pp/jquery/jquery.min.js"></script>
-  <script src="3pp/bootstrap/dist/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="3pp/codemirror/dist/lib/codemirror.css" type="text/css">
+  <link rel="stylesheet" href="3pp/codemirror/dist/theme/solarized.css" type="text/css">
+  <link rel="stylesheet" href="3pp/codemirror/dist/addon/dialog/dialog.css" type="text/css">
+  <style type="text/css">
+    .CodeMirror {
+      border: 1px solid #eee;
+      height: 100%;
+    }
+  </style>
   <script src="3pp/angular/angular.min.js"></script>
   <script src="3pp/angular/angular-resource.min.js"></script>
   <script src="3pp/angular/angular-route.min.js"></script>
+  <script src="3pp/codemirror/dist/lib/codemirror.js"></script>
+  <script src="3pp/codemirror/dist/addon/edit/matchbrackets.js"></script>
+  <script src="3pp/codemirror/dist/addon/dialog/dialog.js"></script>
+  <script src="3pp/codemirror/dist/addon/mode/overlay.js"></script>
+  <script src="3pp/codemirror/dist/addon/search/searchcursor.js"></script>
+  <script src="3pp/codemirror/dist/keymap/vim.js"></script>
+  <script src="3pp/codemirror/dist/mode/meta.js"></script>
+  <script src="3pp/codemirror/dist/mode/markdown/markdown.js"></script>
+  <script src="3pp/codemirror/dist/mode/gfm/gfm.js"></script>
+  <script src="3pp/codemirror/dist/mode/javascript/javascript.js"></script>
+  <script src="3pp/codemirror/dist/mode/clike/clike.js"></script>
+  <script src="3pp/codemirror/dist/mode/haskell/haskell.js"></script>
+  <script src="3pp/codemirror/dist/mode/shell/shell.js"></script>
   <script src="3pp/ui-codemirror/dist/ui-codemirror.js"></script>
+  <script src="3pp/jquery/jquery.min.js"></script>
+  <script src="3pp/bootstrap/dist/js/bootstrap.min.js"></script>
   <title>Y Journal</title>
 </head>
 <body>

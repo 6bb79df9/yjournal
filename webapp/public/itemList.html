@@ -1,13 +1,12 @@
-<h1>List item</h1>
 <div>
   <form ng-submit="itemList.add()">
-    <input type="text" ng-model="itemList.content" placeholder="Quick add an item ..." style="width:100%">
+    <input type="text" ng-model="itemList.content" placeholder="Quick add an item ..." style="width:100%" autofocus>
   </form>
   <table>
     <tr ng-repeat="item in itemList.items">
-      <td><span class="text-danger glyphicon glyphicon-remove" ng-click="itemList.remove(item.id)"></span></td>
+      <td><a class="text-danger glyphicon glyphicon-remove" ng-click="itemList.remove(item.id)" href="#"></a></td>
       <td>
-        <a data-toggle="tooltip" title={{item.time}} href="#/edit/{{item.id}}">{{item.content}}</a>
+        <a data-toggle="tooltip" title={{item.time}} href="#/edit/{{item.id}}">{{itemList.title(item)}}</a>
       </td>
     </tr>
   </table>
