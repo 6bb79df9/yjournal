@@ -5,6 +5,7 @@ use warnings;
 use Data::UUID;
 use DateTime;
 use DateTime::Format::ISO8601;
+use YJournal::Attribute;
 use YJournal::Content;
 
 my $uuid = new Data::UUID;
@@ -19,6 +20,7 @@ sub new {
     id => $uuid->create_str(),
     time => DateTime->now(),
     content => "",
+    attribute => {},
   };
   while (my ($k, $v) = each (%$default)) {
     defined($obj->{$k}) or $obj->{$k} = $v;
@@ -43,6 +45,16 @@ sub time {
 sub content {
   my $self = shift;
   $self->('content', @_);
+}
+
+sub attribute {
+  my $self = shift;
+  my $attrs = $self->('attribute');
+  for (@_) {
+    $attrs->{$_->{type}}->{$_->{name}} = $_;
+  }
+  $self->('attribute', $attrs);
+  $attrs;
 }
 
 sub create {
@@ -129,6 +141,7 @@ sub delete {
 
 sub query {
   my $dbh = shift;
+  my $interestedAttrTypes = shift || [];
   $dbh->begin_work;
   my $rows = $dbh->selectall_arrayref(q{
     SELECT item.id AS id, item.time as time, content.content AS content
@@ -137,7 +150,15 @@ sub query {
     },
     {Slice => {}}) or YJournal::DB::rollback($dbh, undef, "Couldn't load item list:" . $dbh->errstr);
   $dbh->commit;
-  [map {YJournal::Item->new(%$_);} @$rows];
+  my $items = [map {YJournal::Item->new(%$_);} @$rows];
+  for my $type (@$interestedAttrTypes) {
+    for my $item (@$items) {
+      my ($attrs, $error) = YJournal::Attribute::query($dbh, $item->id, $type);
+      defined($attrs) or return ($attrs, $error);
+      $item->attribute(@$attrs);
+    }
+  }
+  return $items;
 }
 
 sub TO_JSON {
@@ -146,6 +167,7 @@ sub TO_JSON {
     id => $self->id(),
     time => $self->time()->iso8601(),
     content => $self->content(),
+    attribute => $self->attribute(),
   };
 }
 

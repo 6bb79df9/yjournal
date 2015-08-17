@@ -1,15 +1,3 @@
-String.prototype.colorCode = function() {
-  var hash = 0, i, chr, len;
-  if (this.length == 0) return hash;
-  for (i = 0, len = this.length; i < len; i++) {
-    chr   = this.charCodeAt(i);
-    hash  = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  hash = (hash & 0xffffff) | 0x404040;
-  return '#' + hash.toString(16);
-};
-
 angular.module('item', ['ngRoute', 'ui.codemirror'])
 
 .config(function($routeProvider) {
@@ -39,7 +27,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   self.query = function () {
     var deferred = $q.defer();
 
-    $http.get('/api/item.json')
+    $http.get('/api/item.json?atypes=attachment,tag')
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
@@ -104,14 +92,27 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
 .service('Attributes', function($http, $q) {
   var self = this;
 
-  self.retrieve = function(id) {
+  self.create = function(id, tag) {
     var deferred = $q.defer();
 
-    $http.get('/api/item/' + id + '/a/' + 'tag.json')
+    $http.post('/api/item/' + id + '/a/tag/' + tag + '.json', {content : 1})
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
         deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
+
+  self.retrieve = function(ctx, id) {
+    var deferred = $q.defer();
+
+    $http.get('/api/item/' + id + '/a/' + 'tag.json')
+      .then(function (response) {
+        deferred.resolve({ctx : ctx, tags : response.data});
+      }, function (response) {
+        deferred.reject(ctx, response.data);
       });
 
     return deferred.promise;
@@ -122,15 +123,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   var itemList = this;
   itemList.items = items;
 
-  for (i in items) {
-    var item = items[i];
-    item.tags = [];
-    Attributes.retrieve(item.id)
-      .then(function(tags) {
-        item.tags = tags;
-      });
-  }
-
+  // Title is the first non-blank line of content
   itemList.title = function(item) {
     var m = item.content.match(/^\s*([^\r\n]+)/);
     return m == null ? "<UNTITLED>" : m[0];
@@ -161,12 +154,18 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   }
 })
 
-.controller('ItemEditController', function($scope, $q, $location, $routeParams, Items) {
+.controller('ItemEditController', function($scope, $q, $location, $routeParams, Items, Attributes) {
   var itemEdit = this;
 
   Items.retrieve($routeParams.id)
     .then(function(data) {
       itemEdit.item = data;
+
+      itemEdit.item.tags = [];
+      Attributes.retrieve(itemEdit.item, itemEdit.item.id)
+          .then(function(data) {
+            data.ctx.tags = data.tags;
+          });
     }, function(data) {
       $location.path('/');
     });
@@ -190,7 +189,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
 
   itemEdit.quit = function() {
     // TODO: Fix following ugly code for quit current view
-    // The problem is that "$location.path('/')" won't work if quit() is 
+    // The problem is that "$location.path('/')" won't work if quit() is
     // called from ':q' Ex command of Vim binding.
     var deferred = $q.defer();
     window.setTimeout(function() {
@@ -200,6 +199,16 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
     deferred.promise.then(function () {
       $location.path('/');
     });
+  };
+
+  itemEdit.addAttribute = function() {
+    Attributes.create(itemEdit.item.id, itemEdit.tag)
+      .then(function (data) {
+        itemEdit.item.tags.push(data);
+      }, function(data) {
+      }, function(data) {
+      });
+    itemEdit.tag = "";
   };
 
   $scope.cmOptions = {
@@ -224,6 +233,17 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
       });
     }
   };
-})
+});
 
-;
+String.prototype.colorCode = function() {
+  var hash = 0, i, chr, len;
+  if (this.length == 0) return hash;
+  for (i = 0, len = this.length; i < len; i++) {
+    chr   = this.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  hash = (hash & 0xffffff) | 0x404040;
+  return '#' + hash.toString(16);
+};
+

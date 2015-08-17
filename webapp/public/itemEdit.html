@@ -1,1 +1,7 @@
+<form ng-submit="itemEdit.addAttribute()">
+  <div class="badge">
+    <span class="badge" ng-repeat="tag in itemEdit.item.tags" style="background-color:{{tag.name.colorCode()}}">{{tag.name}}</span>
+    <input type="text" ng-model="itemEdit.tag" placeholder="New tag" style="border:none;background:transparent">
+  </div>
+</form>
 <div ng-model="itemEdit.item.content" ui-codemirror="cmOptions"></div>

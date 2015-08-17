@@ -45,7 +45,10 @@ del '/api/item/:id.:format' => sub {
 };
 
 get '/api/item.:format' => sub {
-  my ($ret, $error) = YJournal::Item::query($dbh);
+  my $attrTypes;
+  defined(params->{atypes})
+    and $attrTypes = [split(/\s*,\s*/, params->{atypes})];
+  my ($ret, $error) = YJournal::Item::query($dbh, $attrTypes);
   defined($error)
     and send_error $error
     or return $ret;
