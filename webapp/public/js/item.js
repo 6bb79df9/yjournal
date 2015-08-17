@@ -118,6 +118,20 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
 
     return deferred.promise;
   };
+
+  self.remove = function(id, name) {
+    var deferred = $q.defer();
+
+    $http.delete('/api/item/' + encodeURIComponent(id) +
+                 '/a/tag/' + encodeURIComponent(name) + '.json')
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
 })
 
 .controller('ItemListController', function(Items, Attributes, items) {
@@ -210,6 +224,20 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
       }, function(data) {
       });
     itemEdit.tag = "";
+  };
+
+  itemEdit.removeTag = function(name) {
+    Attributes.remove(itemEdit.item.id, name)
+      .then(function (data) {
+        for (i in itemEdit.item.tags) {
+          if (itemEdit.item.tags[i].name === name) {
+            itemEdit.item.tags.splice(i, 1);
+            break;
+          }
+        }
+      }, function(data) {
+      }, function(data) {
+      });
   };
 
   $scope.cmOptions = {

@@ -1,5 +1,10 @@
 <form ng-submit="itemEdit.addAttribute()">
-  <span class="badge" ng-repeat="tag in itemEdit.item.tags" style="background-color:{{tag.name.colorCode()}}">{{tag.name}}</span>
+  <span class="badge" ng-repeat="tag in itemEdit.item.tags"
+    style="background-color:{{tag.name.colorCode()}}">
+    {{tag.name}}
+    <span class="glyphicon glyphicon-remove-circle"
+      ng-click="itemEdit.removeTag(tag.name)"></span>
+  </span>
   <div class="badge">
     <input type="text" ng-model="itemEdit.tag" placeholder="New tag" style="border:none;background:transparent">
   </div>
