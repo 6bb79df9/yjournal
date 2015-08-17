@@ -98,7 +98,9 @@ sub delete {
     DELETE FROM attribute
     WHERE id=? AND type=? AND name=?;
     }, {},
-    $id) or YJournal::DB::rollback($dbh, undef, "Couldn't delete attribute" . $dbh->errstr);
+    $id,
+    $type,
+    $name) or YJournal::DB::rollback($dbh, undef, "Couldn't delete attribute" . $dbh->errstr);
   $dbh->commit;
   1;
 }
