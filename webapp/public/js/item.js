@@ -52,7 +52,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   self.retrieve = function(id) {
     var deferred = $q.defer();
 
-    $http.get('/api/item/' + id + '.json')
+    $http.get('/api/item/' + encodeURIComponent(id) + '.json')
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
@@ -65,7 +65,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   self.update = function(id, content) {
     var deferred = $q.defer();
 
-    $http.put('/api/item/' + id + '.json', {content : content})
+    $http.put('/api/item/' + encodeURIComponent(id) + '.json', {content : content})
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
@@ -78,7 +78,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   self.remove = function(id) {
     var deferred = $q.defer();
 
-    $http.delete('/api/item/' + id + '.json')
+    $http.delete('/api/item/' + encodeURIComponent(id) + '.json')
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
@@ -95,7 +95,8 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   self.create = function(id, tag) {
     var deferred = $q.defer();
 
-    $http.post('/api/item/' + id + '/a/tag/' + tag + '.json', {content : 1})
+    $http.post('/api/item/' + encodeURIComponent(id) +
+               '/a/tag/' + encodeURIComponent(tag) + '.json', {content : 1})
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
@@ -108,7 +109,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   self.retrieve = function(ctx, id) {
     var deferred = $q.defer();
 
-    $http.get('/api/item/' + id + '/a/' + 'tag.json')
+    $http.get('/api/item/' + encodeURIComponent(id) + '/a/' + 'tag.json')
       .then(function (response) {
         deferred.resolve({ctx : ctx, tags : response.data});
       }, function (response) {
