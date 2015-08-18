@@ -33,6 +33,7 @@ sub db {
     $dbh->commit;
     $ret;
   } catch {
+    chomp;
     my $error = $_;
     $dbh->rollback;
     send_error $error;
@@ -62,14 +63,29 @@ get '/api/item.:format' => sub {
   db sub {YJournal::Item::query($dbh, $attrTypes)};
 };
 
-post '/api/item/:id/a/:type/:name.:format' => sub {
+post '/api/item/:id/a/:type.:format' => sub {
   db sub {
-    YJournal::Attribute::create(
-      $dbh,
-      params->{id},
-      params->{type},
-      params->{name},
-      params->{content});
+    my $uploads = request->uploads();
+    if (defined($uploads) && defined($uploads->{content})) {
+      # Uploaded content
+      my $content = $uploads->{content};
+      ref($content) eq 'ARRAY' and $content = $content->[0];
+      YJournal::Attribute::create(
+        $dbh,
+        params->{id},
+        params->{type},
+        $content->basename(),
+        $content->file_handle(),
+        $content->type());
+    } else {
+      # Normal content
+      YJournal::Attribute::create(
+        $dbh,
+        params->{id},
+        params->{type},
+        params->{name},
+        params->{content});
+    }
   };
 };
 
@@ -80,6 +96,20 @@ get '/api/item/:id/a/:type/:name.:format' => sub {
       params->{id},
       params->{type},
       params->{name});
+  };
+};
+
+get '/api/item/:id/a/:type/:name/c' => sub {
+  db sub {
+    my $attr = YJournal::Attribute::download(
+      $dbh,
+      params->{id},
+      params->{type},
+      params->{name});
+    my $ctype = $attr->{ctype};
+    $ctype eq '' and $ctype = "text/plain";
+    content_type $ctype;
+    $attr->{content};
   };
 };
 

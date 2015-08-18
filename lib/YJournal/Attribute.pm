@@ -26,7 +26,7 @@ sub create {
   my $type = shift;
   my $name = shift;
   my $content = shift;
-  my $ctype = shift || "application/json"; # TODO: Check default conent type
+  my $ctype = shift || "";
 
   my $cid = YJournal::Content::save($dbh, $content);
   $dbh->do(q{
@@ -43,12 +43,37 @@ sub create {
     id => $id,
     type => $type,
     name => $name,
-    content => $content,
+    content => (ref($content) ne "" ? $name : $content),
     ctype => $ctype,
   };
 }
 
 sub retrieve {
+  my $dbh = shift;
+  my $id = shift;
+  my $type = shift;
+  my $name = shift;
+
+  my $ret = $dbh->selectrow_hashref(q{
+    SELECT ctype, CASE WHEN cid<>'' THEN name ELSE content.content END AS content
+    FROM attribute
+    LEFT JOIN content
+    ON attribute.cid=content.id
+    WHERE attribute.id=? AND type=? AND name=?;
+    }, {},
+    $id,
+    $type,
+    $name) or die "Couldn't load attribute: " . $dbh->errstr . "\n";
+  return {
+    id => $id,
+    type => $type,
+    name => $name,
+    ctype => $ret->{ctype},
+    content => $ret->{content},
+  };
+}
+
+sub download {
   my $dbh = shift;
   my $id = shift;
   my $type = shift;
@@ -79,17 +104,31 @@ sub update {
   my $type = shift;
   my $name = shift;
   my $content = shift;
+  my $ctype = shift || "";
 
   my $cid = YJournal::Content::save($dbh, $content);
-  $dbh->do(q{
-    UPDATE attribute
-    SET cid=?
-    WHERE id=? AND type=? AND name=?;
-    }, {},
-    $cid,
-    $id,
-    $type,
-    $name) or die "Couldn't update attribute: " . $dbh->errstr . "\n";
+  if (defined($ctype)) {
+    $dbh->do(q{
+      UPDATE attribute
+      SET cid=?, ctype=?
+      WHERE id=? AND type=? AND name=?;
+      }, {},
+      $cid,
+      $ctype,
+      $id,
+      $type,
+      $name) or die "Couldn't update attribute: " . $dbh->errstr . "\n";
+  } else {
+    $dbh->do(q{
+      UPDATE attribute
+      SET cid=?
+      WHERE id=? AND type=? AND name=?;
+      }, {},
+      $cid,
+      $id,
+      $type,
+      $name) or die "Couldn't update attribute: " . $dbh->errstr . "\n";
+  }
   1;
 }
 
@@ -120,7 +159,7 @@ sub query {
     attribute.type AS type,
     attribute.name AS name,
     attribute.ctype AS ctype,
-    content.content AS content
+    CASE WHEN cid<>'' THEN name ELSE content.content END AS content
     FROM attribute
     LEFT JOIN content ON attribute.cid=content.id
     WHERE attribute.id=? AND attribute.type=?;
