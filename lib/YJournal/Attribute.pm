@@ -5,16 +5,30 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use YJournal::Content;
 
+sub init {
+  my $dbh = shift;
+
+  $dbh->do(q{
+    CREATE TABLE IF NOT EXISTS attribute (
+    id TEXT NOT NULL,
+    type TEXT NOT NULL,
+    name TEXT NOT NULL,
+    ctype TEXT NOT NULL,
+    cid TEXT NOT NULL,
+    PRIMARY KEY(id, type, name)
+    );
+    }) or die "Couldn't create attribute table" . $dbh->errstr . "\n";
+}
+
 sub create {
   my $dbh = shift;
   my $id = shift;
   my $type = shift;
   my $name = shift;
   my $content = shift;
-  my $ctype = shift || "application/json";
-  $dbh->begin_work;
-  my ($cid, $error) = YJournal::Content::save($dbh, $content);
-  defined($cid) or return (undef, $error);
+  my $ctype = shift || "application/json"; # TODO: Check default conent type
+
+  my $cid = YJournal::Content::save($dbh, $content);
   $dbh->do(q{
     INSERT INTO attribute(id, type, name, ctype, cid)
     VALUES(?, ?, ?, ?, ?);
@@ -23,9 +37,9 @@ sub create {
     $type,
     $name,
     $ctype,
-    $cid) or return YJournal::DB::rollback($dbh, undef, "Couldn't insert attribute" . $dbh->errstr);
-  $dbh->commit;
-  return {
+    $cid) or return die "Couldn't insert attribute: " . $dbh->errstr . "\n";
+
+  {
     id => $id,
     type => $type,
     name => $name,
@@ -39,28 +53,23 @@ sub retrieve {
   my $id = shift;
   my $type = shift;
   my $name = shift;
-  $dbh->begin_work;
-  my $attribute = $dbh->selectrow_hashref(q{
-    SELECT ctype, cid
+
+  my $ret = $dbh->selectrow_hashref(q{
+    SELECT ctype, content.content AS content
     FROM attribute
-    WHERE id=? AND type=? AND name=?;
+    LEFT JOIN content
+    ON attribute.cid=content.id
+    WHERE attribute.id=? AND type=? AND name=?;
     }, {},
     $id,
     $type,
-    $name) or return YJournal::DB::rollback($dbh, undef, "Couldn't load attribute:");
-  my $content = $dbh->selectrow_hashref(q{
-    SELECT content
-    FROM content
-    WHERE id=?;
-    }, {},
-    $attribute->{cid}) or return YJournal::DB::rollback($dbh, undef, "Couldn't load content" . $dbh->errstr);
-  $dbh->commit;
+    $name) or die "Couldn't load attribute: " . $dbh->errstr . "\n";
   return {
     id => $id,
     type => $type,
     name => $name,
-    ctype => $attribute->{ctype},
-    content => $content->{content},
+    ctype => $ret->{ctype},
+    content => $ret->{content},
   };
 }
 
@@ -71,9 +80,7 @@ sub update {
   my $name = shift;
   my $content = shift;
 
-  $dbh->begin_work;
-  my ($cid, $error) = YJournal::Content::save($dbh, $content);
-  defined($cid) or return (undef, $error);
+  my $cid = YJournal::Content::save($dbh, $content);
   $dbh->do(q{
     UPDATE attribute
     SET cid=?
@@ -82,8 +89,7 @@ sub update {
     $cid,
     $id,
     $type,
-    $name) or return YJournal::DB::rollback($dbh, undef, "Couldn't update attribute" . $dbh->errstr);
-  $dbh->commit;
+    $name) or die "Couldn't update attribute: " . $dbh->errstr . "\n";
   1;
 }
 
@@ -93,15 +99,13 @@ sub delete {
   my $type = shift;
   my $name = shift;
 
-  $dbh->begin_work;
   $dbh->do(q{
     DELETE FROM attribute
     WHERE id=? AND type=? AND name=?;
     }, {},
     $id,
     $type,
-    $name) or YJournal::DB::rollback($dbh, undef, "Couldn't delete attribute" . $dbh->errstr);
-  $dbh->commit;
+    $name) or die "Couldn't delete attribute: " . $dbh->errstr . "\n";
   1;
 }
 
@@ -110,23 +114,20 @@ sub query {
   my $id = shift;
   my $type = shift;
 
-  $dbh->begin_work;
-  my $rows = $dbh->selectall_arrayref(q{
+  $dbh->selectall_arrayref(q{
     SELECT
-      attribute.id AS id,
-      attribute.type AS type,
-      attribute.name AS name,
-      attribute.ctype AS ctype,
-      content.content AS content
+    attribute.id AS id,
+    attribute.type AS type,
+    attribute.name AS name,
+    attribute.ctype AS ctype,
+    content.content AS content
     FROM attribute
     LEFT JOIN content ON attribute.cid=content.id
     WHERE attribute.id=? AND attribute.type=?;
     },
     {Slice => {}},
     $id,
-    $type) or YJournal::DB::rollback($dbh, undef, "Couldn't load attribute list:" . $dbh->errstr);
-  $dbh->commit;
-  return $rows;
+    $type) or die "Couldn't load attribute list: " . $dbh->errstr . "\n";
 }
 
 1;

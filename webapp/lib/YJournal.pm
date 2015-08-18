@@ -2,7 +2,9 @@ package YJournal;
 use Dancer ':syntax';
 use Dancer::Plugin::REST;
 use Dancer::Plugin::Database;
-use YJournal::DB;
+use DBI;
+use Try::Tiny;
+use YJournal::Content;
 use YJournal::Item;
 use YJournal::Attribute;
 
@@ -10,104 +12,105 @@ our $VERSION = '0.1';
 
 prepare_serializer_for_format;
 
-my $dbh = YJournal::DB::init();
+# Initialize database
+my $dbname = "yjournal.db";
+my $dbh = DBI->connect("dbi:SQLite:dbname=$dbname", "", "")
+  or confess ("Couldn't connect to database '$dbname':" . $DBI::errstr);
+YJournal::Content::init($dbh);
+YJournal::Item::init($dbh);
+YJournal::Attribute::init($dbh);
 
 get '/' => sub {
     template 'index';
 };
 
+sub db {
+  my $f = shift;
+
+  $dbh->begin_work;
+  try {
+    my $ret = $f->(@_);
+    $dbh->commit;
+    $ret;
+  } catch {
+    my $error = $_;
+    $dbh->rollback;
+    send_error $error;
+  }
+}
+
 post '/api/item.:format' => sub {
-  my ($ret, $error) = YJournal::Item::create($dbh, content => params->{content});
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {YJournal::Item::create($dbh, content => params->{content})};
 };
 
 get '/api/item/:id.:format' => sub {
-  my ($ret, $error) = YJournal::Item::retrieve($dbh, params->{id});
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {YJournal::Item::retrieve($dbh, params->{id})};
 };
 
 put '/api/item/:id.:format' => sub {
-  my ($ret, $error) = YJournal::Item::update($dbh, params->{id}, params->{content});
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {YJournal::Item::update($dbh, params->{id}, params->{content})};
 };
 
 del '/api/item/:id.:format' => sub {
-  my ($ret, $error) = YJournal::Item::delete($dbh, params->{id});
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {YJournal::Item::delete($dbh, params->{id})};
 };
 
 get '/api/item.:format' => sub {
   my $attrTypes;
   defined(params->{atypes})
     and $attrTypes = [split(/\s*,\s*/, params->{atypes})];
-  my ($ret, $error) = YJournal::Item::query($dbh, $attrTypes);
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {YJournal::Item::query($dbh, $attrTypes)};
 };
 
 post '/api/item/:id/a/:type/:name.:format' => sub {
-  my ($ret, $error) = YJournal::Attribute::create(
-    $dbh,
-    params->{id},
-    params->{type},
-    params->{name},
-    params->{content});
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {
+    YJournal::Attribute::create(
+      $dbh,
+      params->{id},
+      params->{type},
+      params->{name},
+      params->{content});
+  };
 };
 
 get '/api/item/:id/a/:type/:name.:format' => sub {
-  my ($ret, $error) = YJournal::Attribute::retrieve(
-    $dbh,
-    params->{id},
-    params->{type},
-    params->{name});
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {
+    YJournal::Attribute::retrieve(
+      $dbh,
+      params->{id},
+      params->{type},
+      params->{name});
+  };
 };
 
 put '/api/item/:id/a/:type/:name.:format' => sub {
-  my ($ret, $error) = YJournal::Attribute::update(
-    $dbh,
-    params->{id},
-    params->{type},
-    params->{name},
-    params->{content});
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {
+    YJournal::Attribute::update(
+      $dbh,
+      params->{id},
+      params->{type},
+      params->{name},
+      params->{content});
+  };
 };
 
 del '/api/item/:id/a/:type/:name.:format' => sub {
-  my ($ret, $error) = YJournal::Attribute::delete(
-    $dbh,
-    params->{id},
-    params->{type},
-    params->{name});
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {
+    YJournal::Attribute::delete(
+      $dbh,
+      params->{id},
+      params->{type},
+      params->{name});
+  };
 };
 
 get '/api/item/:id/a/:type.:format' => sub {
-  my ($ret, $error) = YJournal::Attribute::query(
-    $dbh,
-    params->{id},
-    params->{type});
-  defined($error)
-    and send_error $error
-    or return $ret;
+  db sub {
+    YJournal::Attribute::query(
+      $dbh,
+      params->{id},
+      params->{type});
+  };
 };
 
 true;
