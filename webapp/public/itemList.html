@@ -7,7 +7,7 @@
       <td><a class="text-danger glyphicon glyphicon-remove" ng-click="itemList.remove(item.id)" href="#" style="padding-right:3px"></a></td>
       <td>
         <a data-toggle="tooltip" title={{item.time}} href="#/edit/{{item.id}}">{{itemList.title(item)}}</a>
-        <span class="badge" ng-repeat="tag in item.attribute.tag" style="background-color:{{tag.name.colorCode()}}">{{tag.name}}</span>
+        <span class="badge" ng-repeat="tag in item.attribute.tag" style="background-color:{{tag.name.colorCode()}};color:{{tag.name.reversedColorCode()}}">{{tag.name}}</span>
       </td>
     </tr>
   </table>

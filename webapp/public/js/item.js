@@ -264,7 +264,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
   };
 });
 
-String.prototype.colorCode = function() {
+String.prototype.colorHash = function() {
   var hash = 0, i, chr, len;
   if (this.length == 0) return hash;
   for (i = 0, len = this.length; i < len; i++) {
@@ -273,6 +273,23 @@ String.prototype.colorCode = function() {
     hash |= 0; // Convert to 32bit integer
   }
   hash = (hash & 0xffffff) | 0x404040;
+  return hash;
+};
+
+String.prototype.colorCode = function() {
+  return '#' + this.colorHash().toString(16);
+};
+String.prototype.reversedColorCode = function() {
+  var hash = this.colorHash();
+  var r = (hash >> 16) & 0xff;
+  var g = (hash >> 8) & 0xff;
+  var b = hash & 0xff;
+  var y = (2 * r + b + 3 * g) / 6;
+  if (y > 200) {
+    hash = 0x606060;
+  } else {
+    hash = 0xffffff;
+  }
   return '#' + hash.toString(16);
 };
 

@@ -1,6 +1,6 @@
 <form ng-submit="itemEdit.addAttribute()">
   <span class="badge" ng-repeat="tag in itemEdit.item.tags"
-    style="background-color:{{tag.name.colorCode()}}">
+    style="background-color:{{tag.name.colorCode()}};color:{{tag.name.reversedColorCode()}}">
     {{tag.name}}
     <span class="glyphicon glyphicon-remove-circle"
       ng-click="itemEdit.removeTag(tag.name)"></span>
