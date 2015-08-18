@@ -96,7 +96,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
     var deferred = $q.defer();
 
     $http.post('/api/item/' + encodeURIComponent(id) +
-               '/a/tag/' + encodeURIComponent(tag) + '.json', {content : 1})
+               '/a/tag.json', {content : 1, name : tag})
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
