@@ -1,12 +1,32 @@
-<form ng-submit="itemEdit.addAttribute()">
-  <span class="badge" ng-repeat="tag in itemEdit.item.tags"
-    style="background-color:{{tag.name.colorCode()}};color:{{tag.name.reversedColorCode()}}">
+<form ng-submit="itemEdit.addTag()">
+  <span ng-repeat="tag in itemEdit.item.attribute.tag"
+    class="badge"
+    style="background-color:{{tag.name.colorCode()}};
+           color:{{tag.name.reversedColorCode()}}">
     {{tag.name}}
-    <span class="glyphicon glyphicon-remove-circle"
-      ng-click="itemEdit.removeTag(tag.name)"></span>
+    <span ng-click="itemEdit.removeTag(tag.name)"
+      class="glyphicon glyphicon-remove-circle"
+      style="cursor:pointer"></span>
   </span>
   <div class="badge">
-    <input type="text" ng-model="itemEdit.tag" placeholder="New tag" style="border:none;background:transparent">
+    <input ng-model="itemEdit.tag" type="text" placeholder="New tag"
+    style="border:none;background:transparent">
   </div>
 </form>
+<form>
+  <span ng-repeat="attachment in itemEdit.item.attribute.attachment"
+    class="badge alert-info">
+    <a target="_blank"
+      href="/api/item/{{itemEdit.item.id}}/a/attachment/{{attachment.name}}/c">
+      {{attachment.name}}
+    </a>
+    <i class="glyphicon glyphicon-download-alt"></i>
+    <span ng-click="itemEdit.removeAttachment(attachment.name)"
+      class="glyphicon glyphicon-remove-circle"
+      style="cursor:pointer"></span>
+  </span>
+  <span ngf-select ng-model="file"
+    class="badge" style="cursor:pointer">Upload</span>
+</form>
+
 <div ng-model="itemEdit.item.content" ui-codemirror="cmOptions"></div>

@@ -1,137 +1,29 @@
-angular.module('item', ['ngRoute', 'ui.codemirror'])
+angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
 
 .config(function($routeProvider) {
   $routeProvider
-  .when('/', {
-    controller : "ItemListController as itemList",
-    templateUrl : "itemList.html",
-    resolve : {
-      items : function (Items) {
-        return Items.query();
+    .when('/', {
+      controller : "ItemListController as itemList",
+      templateUrl : "itemList.html",
+      resolve : {
+        items : function (Items) {
+          return Items.query(['tag', 'attachment']);
+        }
       }
-    }
-  })
+    })
   .when('/edit/:id', {
     controller : "ItemEditController as itemEdit",
     templateUrl : "itemEdit.html",
+    resolve : {
+      item : function ($route, Items) {
+        return Items.retrieve($route.current.params.id, ['tag', 'attachment']);
+      }
+    }
   })
   .otherwise({
     redirectTo : "/"
   })
   ;
-})
-
-.service('Items', function($http, $q) {
-  var self = this;
-
-  self.query = function () {
-    var deferred = $q.defer();
-
-    $http.get('/api/item.json?atypes=attachment,tag')
-      .then(function (response) {
-        deferred.resolve(response.data);
-      }, function (response) {
-        deferred.reject(response.data);
-      });
-    return deferred.promise;
-  };
-
-  self.create = function(content) {
-    var deferred = $q.defer();
-
-    $http.post('/api/item.json', {content : content})
-      .then(function (response) {
-        deferred.resolve(response.data);
-      }, function (response) {
-        deferred.reject(response.data);
-      });
-
-    return deferred.promise;
-  };
-
-  self.retrieve = function(id) {
-    var deferred = $q.defer();
-
-    $http.get('/api/item/' + encodeURIComponent(id) + '.json')
-      .then(function (response) {
-        deferred.resolve(response.data);
-      }, function (response) {
-        deferred.reject(response.data);
-      });
-
-    return deferred.promise;
-  }
-
-  self.update = function(id, content) {
-    var deferred = $q.defer();
-
-    $http.put('/api/item/' + encodeURIComponent(id) + '.json', {content : content})
-      .then(function (response) {
-        deferred.resolve(response.data);
-      }, function (response) {
-        deferred.reject(response.data);
-      });
-
-    return deferred.promise;
-  };
-
-  self.remove = function(id) {
-    var deferred = $q.defer();
-
-    $http.delete('/api/item/' + encodeURIComponent(id) + '.json')
-      .then(function (response) {
-        deferred.resolve(response.data);
-      }, function (response) {
-        deferred.reject(response.data);
-      });
-
-    return deferred.promise;
-  };
-})
-
-.service('Attributes', function($http, $q) {
-  var self = this;
-
-  self.create = function(id, tag) {
-    var deferred = $q.defer();
-
-    $http.post('/api/item/' + encodeURIComponent(id) +
-               '/a/tag.json', {content : 1, name : tag})
-      .then(function (response) {
-        deferred.resolve(response.data);
-      }, function (response) {
-        deferred.reject(response.data);
-      });
-
-    return deferred.promise;
-  };
-
-  self.retrieve = function(ctx, id) {
-    var deferred = $q.defer();
-
-    $http.get('/api/item/' + encodeURIComponent(id) + '/a/' + 'tag.json')
-      .then(function (response) {
-        deferred.resolve({ctx : ctx, tags : response.data});
-      }, function (response) {
-        deferred.reject(ctx, response.data);
-      });
-
-    return deferred.promise;
-  };
-
-  self.remove = function(id, name) {
-    var deferred = $q.defer();
-
-    $http.delete('/api/item/' + encodeURIComponent(id) +
-                 '/a/tag/' + encodeURIComponent(name) + '.json')
-      .then(function (response) {
-        deferred.resolve(response.data);
-      }, function (response) {
-        deferred.reject(response.data);
-      });
-
-    return deferred.promise;
-  };
 })
 
 .controller('ItemListController', function(Items, Attributes, items) {
@@ -144,16 +36,17 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
     return m == null ? "<UNTITLED>" : m[0];
   }
 
+  // Quick add one journal item
   itemList.add = function() {
     Items.create(itemList.content)
       .then(function (data) {
         items.push(data);
       }, function(data) {
-      }, function(data) {
       });
     itemList.content = "";
   };
 
+  // Remove one item
   itemList.remove = function(id) {
     Items.remove(id)
       .then(function (data) {
@@ -164,27 +57,35 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
           }
         }
       }, function (data) {
-      }, function (data) {
       });
-  }
+  };
 })
 
-.controller('ItemEditController', function($scope, $q, $location, $routeParams, Items, Attributes) {
+.controller('ItemEditController', function($scope, $q, $location, $routeParams,
+                                           Upload, Items, Attributes, item) {
   var itemEdit = this;
+  itemEdit.item = item;
 
-  Items.retrieve($routeParams.id)
-    .then(function(data) {
-      itemEdit.item = data;
+  // Setup file uploader
+  $scope.$watch('file', function (file) {
+    if (file != null && !file.$error) {
+      $scope.upload(file);
+    }
+  });
 
-      itemEdit.item.tags = [];
-      Attributes.retrieve(itemEdit.item, itemEdit.item.id)
-          .then(function(data) {
-            data.ctx.tags = data.tags;
-          });
-    }, function(data) {
-      $location.path('/');
+  $scope.upload = function (files) {
+    Upload.upload({
+      url : '/api/item/' + encodeURIComponent(itemEdit.item.id) + '/a/attachment.json',
+      fileFormDataName : 'content',
+      file : files
+    }).progress(function (evt) {
+    }).success(function (data, status, headers, config) {
+      itemEdit.item.attribute.attachment[data.name] = data;
+    }).error(function (data, status, headers, config) {
     });
+  };
 
+  // Save content of current journal item
   itemEdit.save = function() {
     Items.update(itemEdit.item.id, itemEdit.item.content)
       .then(function (data) {
@@ -193,6 +94,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
       });
   };
 
+  // Save content of current journal item then go back to main item list page
   itemEdit.saveAndQuit = function() {
     Items.update(itemEdit.item.id, itemEdit.item.content)
       .then(function (data) {
@@ -202,6 +104,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
       });
   };
 
+  // Go back to main item list page without save current changes
   itemEdit.quit = function() {
     // TODO: Fix following ugly code for quit current view
     // The problem is that "$location.path('/')" won't work if quit() is
@@ -216,28 +119,41 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
     });
   };
 
-  itemEdit.addAttribute = function() {
-    Attributes.create(itemEdit.item.id, itemEdit.tag)
+  // Add one attribute
+  itemEdit.addAttr = function(type, name, content) {
+    Attributes.create(itemEdit.item.id, type, name, content)
       .then(function (data) {
-        itemEdit.item.tags.push(data);
-      }, function(data) {
-      }, function(data) {
+        // Success
+        itemEdit.item.attribute[type][name] = data;
+      }, function (data) {
+        // Error
       });
+  };
+
+  itemEdit.removeAttr = function(type, name) {
+    Attributes.remove(itemEdit.item.id, type, name)
+      .then(function (data) {
+        // Success
+        delete itemEdit.item.attribute[type][name];
+      }, function (data) {
+        // Error
+      });
+  };
+
+  // Add one tag
+  itemEdit.addTag = function() {
+    itemEdit.addAttr('tag', itemEdit.tag, 1);
     itemEdit.tag = "";
   };
 
+  // Remove one tag
   itemEdit.removeTag = function(name) {
-    Attributes.remove(itemEdit.item.id, name)
-      .then(function (data) {
-        for (i in itemEdit.item.tags) {
-          if (itemEdit.item.tags[i].name === name) {
-            itemEdit.item.tags.splice(i, 1);
-            break;
-          }
-        }
-      }, function(data) {
-      }, function(data) {
-      });
+    itemEdit.removeAttr('tag', name)
+  };
+
+  // Remove one attachment
+  itemEdit.removeAttachment = function(name) {
+    itemEdit.removeAttr('attachment', name)
   };
 
   $scope.cmOptions = {
@@ -262,7 +178,132 @@ angular.module('item', ['ngRoute', 'ui.codemirror'])
       });
     }
   };
-});
+})
+
+.service('Items', function($http, $q) {
+  var self = this;
+
+  self.interestedAttributes = function (atypes) {
+    if (atypes == null)
+      return "";
+
+    var s = atypes.join(',');
+    if (atypes.length > 0) {
+      s = 'atypes=' + encodeURIComponent(s);
+    }
+    return s;
+  }
+
+  // Query list of items
+  self.query = function (atypes) {
+    var deferred = $q.defer();
+
+    $http.get('/api/item.json?'
+              + self.interestedAttributes(atypes))
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
+
+  // Create a new item
+  self.create = function(content) {
+    var deferred = $q.defer();
+
+    $http.post('/api/item.json', {content : content})
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
+
+  // Retrieve one item
+  self.retrieve = function(id, atypes) {
+    var deferred = $q.defer();
+
+    $http.get('/api/item/' + encodeURIComponent(id) + '.json?'
+              + self.interestedAttributes(atypes))
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  }
+
+  // Update content of one item
+  self.update = function(id, content) {
+    var deferred = $q.defer();
+
+    $http.put('/api/item/' + encodeURIComponent(id) + '.json',
+              {content : content})
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
+
+  // Remove one item
+  self.remove = function(id) {
+    var deferred = $q.defer();
+
+    $http.delete('/api/item/' + encodeURIComponent(id) + '.json')
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
+})
+
+.service('Attributes', function($http, $q) {
+  var self = this;
+
+  // Crate one attribute
+  self.create = function(id, type, name, content) {
+    var deferred = $q.defer();
+
+    $http.post('/api/item/' + encodeURIComponent(id) + '/a/'
+               + encodeURIComponent(type) + '.json',
+               {content : content, name : name})
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
+
+  // Remove one attribute
+  self.remove = function(id, type, name) {
+    var deferred = $q.defer();
+
+    $http.delete('/api/item/' + encodeURIComponent(id) + '/a/'
+                 + encodeURIComponent(type) + '/'
+                 + encodeURIComponent(name) + '.json')
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
+})
+;
 
 String.prototype.colorHash = function() {
   var hash = 0, i, chr, len;

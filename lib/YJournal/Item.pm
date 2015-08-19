@@ -87,6 +87,7 @@ sub create {
 sub retrieve {
   my $dbh = shift;
   my $id = shift;
+  my $interestedAttrTypes = shift || [];
 
   my $item = $dbh->selectrow_hashref(q{
     SELECT item.id AS id, time, content.content
@@ -96,9 +97,14 @@ sub retrieve {
     WHERE item.id=?;
     }, {},
     $id) or die "Item not exists: $id\n";
-  YJournal::Item->new(
+  my $item = YJournal::Item->new(
     %$item
   );
+  for my $type (@$interestedAttrTypes) {
+    $item->attribute(@{YJournal::Attribute::query($dbh, $item->id, $type)});
+  }
+
+  $item;
 }
 
 sub update {

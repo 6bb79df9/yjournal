@@ -1,18 +1,38 @@
 <div>
   <form ng-submit="itemList.add()">
-    <input type="text" ng-model="itemList.content" placeholder="Quick add an item ..." style="width:100%" autofocus>
+    <input ng-model="itemList.content" type="text"
+    placeholder="Quick add an item ..." style="width:100%" autofocus>
   </form>
   <table>
     <tr ng-repeat="item in itemList.items">
-      <td><a class="text-danger glyphicon glyphicon-remove" ng-click="itemList.remove(item.id)" href="#" style="padding-right:3px"></a></td>
       <td>
-        <a data-toggle="tooltip" title={{item.time}} href="#/edit/{{item.id}}">{{itemList.title(item)}}</a>
-        <span class="badge" ng-repeat="tag in item.attribute.tag" style="background-color:{{tag.name.colorCode()}};color:{{tag.name.reversedColorCode()}}">{{tag.name}}</span>
+        <a ng-click="itemList.remove(item.id)"
+          class="text-danger glyphicon glyphicon-trash"
+          style="padding-right:3px" href="#">
+        </a>
+      </td>
+      <td>
+        <a data-toggle="tooltip" title={{item.time}} href="#/edit/{{item.id}}">
+          {{itemList.title(item)}}
+        </a>
+        <span ng-repeat="tag in item.attribute.tag"
+          class="badge"
+          style="background-color:{{tag.name.colorCode()}};
+                 color:{{tag.name.reversedColorCode()}}">
+          {{tag.name}}
+        </span>
+        <a ng-repeat="attachment in item.attribute.attachment"
+          class="badge"
+          target="_blank"
+          href="/api/item/{{item.id}}/a/attachment/{{attachment.name}}/c">
+          {{attachment.name}}
+          <i class="glyphicon glyphicon-download-alt"></i>
+        </a>
       </td>
     </tr>
   </table>
+
   <ul class="list-unstyled">
-    <li ng-repeat="item in itemList.items">
-    </li>
+    <li ng-repeat="item in itemList.items"></li>
   </ul>
 </div>

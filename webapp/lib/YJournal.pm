@@ -45,7 +45,10 @@ post '/api/item.:format' => sub {
 };
 
 get '/api/item/:id.:format' => sub {
-  db sub {YJournal::Item::retrieve($dbh, params->{id})};
+  my $attrTypes;
+  defined(params->{atypes})
+    and $attrTypes = [split(/\s*,\s*/, params->{atypes})];
+  db sub {YJournal::Item::retrieve($dbh, params->{id}, $attrTypes)};
 };
 
 put '/api/item/:id.:format' => sub {
@@ -109,6 +112,7 @@ get '/api/item/:id/a/:type/:name/c' => sub {
     my $ctype = $attr->{ctype};
     $ctype eq '' and $ctype = "text/plain";
     content_type $ctype;
+    header 'Content-Disposition' => "inline; filename=\"$attr->{name}\"";
     $attr->{content};
   };
 };
