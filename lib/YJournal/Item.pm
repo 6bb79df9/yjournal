@@ -61,7 +61,9 @@ sub content {
 
 sub attribute {
   my $self = shift;
+  my $type = shift;
   my $attrs = $self->('attribute');
+  defined($attrs->{$type}) or $attrs->{$type} = {};
   for (@_) {
     $attrs->{$_->{type}}->{$_->{name}} = $_;
   }
@@ -101,7 +103,8 @@ sub retrieve {
     %$item
   );
   for my $type (@$interestedAttrTypes) {
-    $item->attribute(@{YJournal::Attribute::query($dbh, $item->id, $type)});
+    $item->attribute($type,
+      @{YJournal::Attribute::query($dbh, $item->id, $type)});
   }
 
   $item;
@@ -155,7 +158,8 @@ sub query {
 
   for my $type (@$interestedAttrTypes) {
     for my $item (@$items) {
-      $item->attribute(@{YJournal::Attribute::query($dbh, $item->id, $type)});
+      $item->attribute($type,
+        @{YJournal::Attribute::query($dbh, $item->id, $type)});
     }
   }
 
