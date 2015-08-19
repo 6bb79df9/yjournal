@@ -1,4 +1,8 @@
 <div>
+  <form ng-submit="itemList.query()">
+    <input ng-model="itemList.queryStr" type="text"
+    placeholder="Query here" style="width:100%" autofocus>
+  </form>
   <form ng-submit="itemList.add()">
     <input ng-model="itemList.content" type="text"
     placeholder="Quick add an item ..." style="width:100%" autofocus>

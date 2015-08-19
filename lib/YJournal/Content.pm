@@ -6,6 +6,7 @@ use Digest::MD5 qw(md5_hex);
 use DBI qw(:sql_types);
 
 my $sth;
+my $sthFTS;
 
 sub init {
   my $dbh = shift;
@@ -17,12 +18,23 @@ sub init {
     PRIMARY KEY(id)
     );
     }) or confess ("Couldn't create content table: " . $dbh->errstr);
+  $dbh->do(q{
+    CREATE VIRTUAL TABLE IF NOT EXISTS contentFTS USING fts4 (
+    id TEXT NOT NULL UNIQUE,
+    content BLOB NOT NULL
+    );
+    }) or confess ("Couldn't create content FTS table: " . $dbh->errstr);
 
   $sth = $dbh->prepare(q{
     INSERT INTO content(id, content)
     SELECT ?, ?
     WHERE NOT EXISTS(SELECT 1 FROM content WHERE ID=?);
     }) or confess ("Couldn't prepare content SQL: " . $dbh->errstr);
+  $sthFTS = $dbh->prepare(q{
+    INSERT INTO contentFTS(id, content)
+    SELECT ?, ?
+    WHERE NOT EXISTS(SELECT 1 FROM contentFTS WHERE ID=?);
+    }) or confess ("Couldn't prepare content FTS SQL: " . $dbh->errstr);
 }
 
 sub save {
@@ -35,13 +47,19 @@ sub save {
     binmode $content;
     $content = <$content>;
   }
-
   my $cid = md5_hex($content);
+
   $sth->bind_param(1, $cid);
   $sth->bind_param(2, $content);
   $sth->bind_param(3, $cid);
   $sth->execute()
-    or die "Couldn't insert content" . $dbh->errstr . "\n";
+    or die "Couldn't insert content: " . $dbh->errstr . "\n";
+
+  $sthFTS->bind_param(1, $cid);
+  $sthFTS->bind_param(2, $content);
+  $sthFTS->bind_param(3, $cid);
+  $sthFTS->execute()
+    or die "Couldn't insert content FTS: " . $dbh->errstr . "\n";
 
   $cid;
 }

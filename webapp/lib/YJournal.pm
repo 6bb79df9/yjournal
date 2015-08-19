@@ -63,7 +63,11 @@ get '/api/item.:format' => sub {
   my $attrTypes;
   defined(params->{atypes})
     and $attrTypes = [split(/\s*,\s*/, params->{atypes})];
-  db sub {YJournal::Item::query($dbh, $attrTypes)};
+  db sub {
+    YJournal::Item::query($dbh,
+      attrTypes => $attrTypes,
+      query => params->{query})
+  };
 };
 
 post '/api/item/:id/a/:type.:format' => sub {

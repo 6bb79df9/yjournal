@@ -63,7 +63,7 @@ sub attribute {
   my $self = shift;
   my $type = shift;
   my $attrs = $self->('attribute');
-  defined($attrs->{$type}) or $attrs->{$type} = {};
+  defined($type) && !defined($attrs->{$type}) or $attrs->{$type} = {};
   for (@_) {
     $attrs->{$_->{type}}->{$_->{name}} = $_;
   }
@@ -91,7 +91,7 @@ sub retrieve {
   my $id = shift;
   my $interestedAttrTypes = shift || [];
 
-  my $item = $dbh->selectrow_hashref(q{
+  my $row = $dbh->selectrow_hashref(q{
     SELECT item.id AS id, time, content.content
     FROM item
     LEFT JOIN content
@@ -100,7 +100,7 @@ sub retrieve {
     }, {},
     $id) or die "Item not exists: $id\n";
   my $item = YJournal::Item->new(
-    %$item
+    %$row
   );
   for my $type (@$interestedAttrTypes) {
     $item->attribute($type,
@@ -145,15 +145,29 @@ sub delete {
 
 sub query {
   my $dbh = shift;
-  my $interestedAttrTypes = shift || [];
+  my $queryParams = {@_};
+  my $interestedAttrTypes = $queryParams->{attrTypes} || [];
+  my $ftsQuery = $queryParams->{query};
 
-  my $rows = $dbh->selectall_arrayref(q{
-    SELECT item.id AS id, item.time as time, content.content AS content
-    FROM item
-    LEFT JOIN content
-    ON item.cid=content.id;
-    },
-    {Slice => {}}) or die "Couldn't load item list: " . $dbh->errstr . "\n";
+  my $rows;
+  if (defined($ftsQuery)) {
+    $rows = $dbh->selectall_arrayref(q{
+      SELECT item.id AS id, item.time as time, contentFTS.content AS content
+      FROM item
+      INNER JOIN contentFTS
+      ON item.cid=contentFTS.id AND contentFTS.content MATCH ?;
+      },
+      {Slice => {}},
+      $ftsQuery) or die "Couldn't load item list: " . $dbh->errstr . "\n";
+  } else {
+    $rows = $dbh->selectall_arrayref(q{
+      SELECT item.id AS id, item.time as time, contentFTS.content AS content
+      FROM item
+      INNER JOIN contentFTS
+      ON item.cid=contentFTS.id;
+      },
+      {Slice => {}}) or die "Couldn't load item list: " . $dbh->errstr . "\n";
+  }
   my $items = [map {YJournal::Item->new(%$_);} @$rows];
 
   for my $type (@$interestedAttrTypes) {

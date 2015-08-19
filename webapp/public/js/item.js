@@ -59,6 +59,21 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
       }, function (data) {
       });
   };
+
+  // Query items by FTS
+  itemList.query = function() {
+    var queryStr = itemList.queryStr;
+    if (queryStr.match(/^\s*$/)) {
+      queryStr = null;
+      itemList.queryStr = "";
+    }
+    Items.query(['tag', 'attachment'], queryStr)
+      .then(function (items) {
+        console.log('items', items);
+        itemList.items = items;
+      }, function (error) {
+      });
+  };
 })
 
 .controller('ItemEditController', function($scope, $q, $location, $routeParams,
@@ -195,11 +210,12 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   }
 
   // Query list of items
-  self.query = function (atypes) {
+  self.query = function (atypes, query) {
     var deferred = $q.defer();
 
     $http.get('/api/item.json?'
-              + self.interestedAttributes(atypes))
+              + self.interestedAttributes(atypes)
+              + (query == null ? "" : "&query=" + encodeURIComponent(query)))
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
