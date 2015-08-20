@@ -115,8 +115,10 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
 
   // Hook for page close event
   $scope.$on('$locationChangeStart', function (evt) {
-    if (!window.confirm("Content not saved, leave?")) {
-      evt.preventDefault();
+    if (!(itemEdit.item.content === itemEdit.savedContent)) {
+      if (!window.confirm("Content not saved, leave?")) {
+        evt.preventDefault();
+      }
     }
   });
 
