@@ -1,11 +1,20 @@
 <div>
   <form ng-submit="itemList.query()">
-    <input ng-model="itemList.queryStr" type="text"
-    placeholder="Query here" style="width:100%" autofocus>
+    <div class="input-group">
+      <input ng-model="itemList.queryStr" type="text" class="form-control"
+      placeholder="Query here" autofocus>
+      <span ng-click="itemList.query()" class="input-group-addon">
+        <i class="glyphicon glyphicon-search"></i>
+      </span>
+    </div>
   </form>
   <form ng-submit="itemList.add()">
-    <input ng-model="itemList.content" type="text"
-    placeholder="Quick add an item ..." style="width:100%" autofocus>
+    <div class="input-group">
+      <input ng-model="itemList.content" type="text" class="form-control"
+      placeholder="Quick add an item ..." style="width:100%" autofocus>
+      <span ng-click="itemList.add()" class="input-group-addon">
+        <i class="glyphicon glyphicon-plus"></i>
+    </div>
   </form>
   <table>
     <tr ng-repeat="item in itemList.items">
