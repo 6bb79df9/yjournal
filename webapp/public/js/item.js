@@ -26,14 +26,15 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   ;
 })
 
-.controller('ItemListController', function(Items, Attributes, items) {
+.controller('ItemListController', function(Items, Attributes, Utils, items) {
   var itemList = this;
   itemList.items = items;
 
+  window.document.title = "Y Journal";
+
   // Title is the first non-blank line of content
   itemList.title = function(item) {
-    var m = item.content.match(/^\s*([^\r\n]+)/);
-    return m == null ? "<UNTITLED>" : m[0];
+    return Utils.title(item.content);
   }
 
   // Quick add one journal item
@@ -76,9 +77,11 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
 })
 
 .controller('ItemEditController', function($scope, $q, $location, $routeParams,
-                                           Upload, Items, Attributes, item) {
+                                           Upload, Items, Attributes, Utils, item) {
   var itemEdit = this;
   itemEdit.item = item;
+
+  window.document.title = Utils.title(item.content);
 
   // Setup file uploader
   $scope.$watch('file', function (file) {
@@ -98,6 +101,13 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
     }).error(function (data, status, headers, config) {
     });
   };
+
+  // Watch content change to set page title
+  $scope.$watch('itemEdit.item.content', function (content) {
+    if (content != null) {
+      window.document.title = Utils.title(content);
+    }
+  });
 
   // Save content of current journal item
   itemEdit.save = function() {
@@ -318,6 +328,16 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
     return deferred.promise;
   };
 })
+
+.service('Utils', function () {
+  var self = this;
+
+  self.title = function (content) {
+    var m = content.match(/^\s*([^\r\n]+)/);
+    return m == null ? "<UNTITLED>" : m[0];
+  };
+})
+
 ;
 
 String.prototype.colorHash = function() {
@@ -335,6 +355,7 @@ String.prototype.colorHash = function() {
 String.prototype.colorCode = function() {
   return '#' + this.colorHash().toString(16);
 };
+
 String.prototype.reversedColorCode = function() {
   var hash = this.colorHash();
   var r = (hash >> 16) & 0xff;
