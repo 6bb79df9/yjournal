@@ -69,7 +69,6 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
     }
     Items.query(['tag', 'attachment'], queryStr)
       .then(function (items) {
-        console.log('items', items);
         itemList.items = items;
       }, function (error) {
       });

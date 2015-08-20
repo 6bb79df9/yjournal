@@ -63,7 +63,7 @@ sub attribute {
   my $self = shift;
   my $type = shift;
   my $attrs = $self->('attribute');
-  defined($type) && !defined($attrs->{$type}) or $attrs->{$type} = {};
+  defined($type) && !defined($attrs->{$type}) and $attrs->{$type} = {};
   for (@_) {
     $attrs->{$_->{type}}->{$_->{name}} = $_;
   }
