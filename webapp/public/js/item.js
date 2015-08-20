@@ -29,6 +29,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
 .controller('ItemListController', function(Items, Attributes, Utils, items) {
   var itemList = this;
   itemList.items = items;
+  itemList.queryStr = "";
 
   window.document.title = "Y Journal";
 
