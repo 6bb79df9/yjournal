@@ -81,8 +81,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
                                            Upload, Items, Attributes, Utils, item) {
   var itemEdit = this;
   itemEdit.item = item;
-
-  window.document.title = Utils.title(item.content);
+  itemEdit.savedContent = item.content;
 
   // Setup file uploader
   $scope.$watch('file', function (file) {
@@ -103,10 +102,21 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
     });
   };
 
+  // Helper function to update page title
+  itemEdit.updateTitle = function () {
+    var changed = itemEdit.item.content === itemEdit.savedContent ? "" : "* ";
+    window.document.title = changed + Utils.title(itemEdit.item.content);
+  };
+
   // Watch content change to set page title
   $scope.$watch('itemEdit.item.content', function (content) {
-    if (content != null) {
-      window.document.title = Utils.title(content);
+    itemEdit.updateTitle();
+  });
+
+  // Hook for page close event
+  $scope.$on('$locationChangeStart', function (evt) {
+    if (!window.confirm("Content not saved, leave?")) {
+      evt.preventDefault();
     }
   });
 
@@ -114,6 +124,8 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   itemEdit.save = function() {
     Items.update(itemEdit.item.id, itemEdit.item.content)
       .then(function (data) {
+        itemEdit.savedContent = itemEdit.item.content;
+        itemEdit.updateTitle();
       }, function(data) {
       }, function (data) {
       });
@@ -203,6 +215,9 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
       });
     }
   };
+
+  // Update title 
+  itemEdit.updateTitle();
 })
 
 .service('Items', function($http, $q) {
