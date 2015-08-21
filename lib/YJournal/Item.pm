@@ -83,6 +83,13 @@ sub create {
     $self->id,
     $self->time->iso8601(),
     $cid) or die "Couldn't insert item: " . $dbh->errstr . "\n";
+  my $attribute = $self->attribute;
+  while (my ($type, $xs) = each(%$attribute)) {
+    while (my ($name, $content) = each(%$xs)) {
+      $self->attribute($type,
+        YJournal::Attribute::create($dbh, $self->id, $type, $name, $content));
+    }
+  }
   $self;
 }
 

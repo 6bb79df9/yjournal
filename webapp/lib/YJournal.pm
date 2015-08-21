@@ -41,7 +41,12 @@ sub db {
 }
 
 post '/api/item.:format' => sub {
-  db sub {YJournal::Item::create($dbh, content => params->{content})};
+  db sub {
+    YJournal::Item::create($dbh,
+      content => params->{content},
+      attribute => params->{attribute},
+    );
+  };
 };
 
 get '/api/item/:id.:format' => sub {

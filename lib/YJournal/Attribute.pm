@@ -55,7 +55,7 @@ sub retrieve {
   my $name = shift;
 
   my $ret = $dbh->selectrow_hashref(q{
-    SELECT ctype, CASE WHEN cid<>'' THEN name ELSE content.content END AS content
+    SELECT ctype, CASE WHEN ctype<>'' THEN name ELSE content.content END AS content
     FROM attribute
     LEFT JOIN content
     ON attribute.cid=content.id
@@ -159,7 +159,7 @@ sub query {
     attribute.type AS type,
     attribute.name AS name,
     attribute.ctype AS ctype,
-    CASE WHEN cid<>'' THEN name ELSE content.content END AS content
+    CASE WHEN attribute.ctype<>'' THEN name ELSE content.content END AS content
     FROM attribute
     LEFT JOIN content ON attribute.cid=content.id
     WHERE attribute.id=? AND attribute.type=?;

@@ -7,7 +7,9 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
       templateUrl : "itemList.html",
       resolve : {
         items : function (Items) {
-          return Items.query(['tag', 'attachment']);
+          return Items.query({
+            atypes : ['tag', 'attachment'],
+          });
         }
       }
     })
@@ -17,6 +19,17 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
     resolve : {
       item : function ($route, Items) {
         return Items.retrieve($route.current.params.id, ['tag', 'attachment']);
+      }
+    }
+  })
+  .when('/todo', {
+    controller : "TodoListController as todoList",
+    templateUrl : "todo.html",
+    resolve : {
+      todos : function (Items) {
+        return Items.query({
+          atypes : ['tag', 'attachment'],
+        });
       }
     }
   })
@@ -40,11 +53,12 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
 
   // Quick add one journal item
   itemList.add = function() {
-    Items.create(itemList.content)
-      .then(function (data) {
-        items.push(data);
-      }, function(data) {
-      });
+    Items.create({
+      content : itemList.content
+    }).then(function (data) {
+      items.push(data);
+    }, function(data) {
+    });
     itemList.content = "";
   };
 
@@ -69,15 +83,18 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
       queryStr = null;
       itemList.queryStr = "";
     }
-    Items.query(['tag', 'attachment'], queryStr)
-      .then(function (items) {
-        itemList.items = items;
-      }, function (error) {
-      });
+    Items.query({
+      atypes : ['tag', 'attachment'],
+      query : queryStr
+    }).then(function (items) {
+      itemList.items = items;
+    }, function (error) {
+    });
   };
 })
 
 .controller('ItemEditController', function($scope, $q, $location, $routeParams,
+                                           $window,
                                            Upload, Items, Attributes, Utils, item) {
   var itemEdit = this;
   itemEdit.item = item;
@@ -137,7 +154,8 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   itemEdit.saveAndQuit = function() {
     Items.update(itemEdit.item.id, itemEdit.item.content)
       .then(function (data) {
-        $location.path('/');
+        itemEdit.savedContent = itemEdit.item.content;
+        $window.history.back();
       }, function(data) {
       }, function (data) {
       });
@@ -154,7 +172,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
     }, 100);
 
     deferred.promise.then(function () {
-      $location.path('/');
+      $window.history.back();
     });
   };
 
@@ -218,8 +236,101 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
     }
   };
 
-  // Update title 
+  // Update title
   itemEdit.updateTitle();
+})
+
+.controller('TodoListController', function($scope, Items, Attributes, Utils, todos) {
+  var todoList = this;
+  todoList.todos = todos;
+  todoList.queryStr = "";
+
+  window.document.title = "TODO";
+
+  $scope.filterTodo = function (type) {
+    return function (item) {
+      return item != null &&
+          item.attribute != null &&
+          item.attribute.tag != null &&
+          item.attribute.tag.todo != null &&
+          item.attribute.tag.todo.content === type;
+    };
+  };
+
+  $scope.toArray = function (obj) {
+    var a = [];
+    for (k in obj) {
+      a.push(obj[k]);
+    }
+    return a;
+  }
+
+  // Title is the first non-blank line of content
+  todoList.title = function(todo) {
+    return Utils.title(todo.content);
+  }
+
+  // Quick add one journal todo
+  todoList.add = function() {
+    Items.create({
+      content : todoList.content,
+      attribute : {
+        tag : {
+          todo : "inbox"
+        }
+      }
+    }).then(function (data) {
+      todos.push(data);
+    }, function(data) {
+    });
+    todoList.content = "";
+  };
+
+  // Remove one todo
+  todoList.remove = function(id) {
+    Items.remove(id)
+      .then(function (data) {
+        for (i in todoList.todos ) {
+          if (todoList.todos[i].id === id) {
+            todoList.todos.splice(i, 1);
+            break;
+          }
+        }
+      }, function (data) {
+      });
+  };
+
+  // Move todo to another folder
+  todoList.moveTo = function (id, target) {
+    for (i in todoList.todos) {
+      if (todoList.todos[i].id === id) {
+        var todo = todoList.todos[i].attribute.tag.todo;
+        if (todo != null) {
+          Attributes.update(id, todo.type, todo.name, target)
+            .then(function (response) {
+              todo.content = target;
+            }, function (error) {
+            });
+        }
+      }
+    }
+  };
+
+  // Query todos by FTS
+  todoList.query = function() {
+    var queryStr = todoList.queryStr;
+    if (queryStr.match(/^\s*$/)) {
+      queryStr = null;
+      todoList.queryStr = "";
+    }
+    Items.query({
+      atypes : ['tag', 'attachment'],
+      query : queryStr
+    }).then(function (todos) {
+      todoList.todos = todos;
+    }, function (error) {
+    });
+  };
 })
 
 .service('Items', function($http, $q) {
@@ -237,8 +348,10 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   }
 
   // Query list of items
-  self.query = function (atypes, query) {
+  self.query = function (config) {
     var deferred = $q.defer();
+    var atypes = config.atypes;
+    var query = config.query;
 
     $http.get('/api/item.json?'
               + self.interestedAttributes(atypes)
@@ -253,10 +366,10 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   };
 
   // Create a new item
-  self.create = function(content) {
+  self.create = function(item) {
     var deferred = $q.defer();
 
-    $http.post('/api/item.json', {content : content})
+    $http.post('/api/item.json', item)
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
@@ -321,6 +434,23 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
     $http.post('/api/item/' + encodeURIComponent(id) + '/a/'
                + encodeURIComponent(type) + '.json',
                {content : content, name : name})
+      .then(function (response) {
+        deferred.resolve(response.data);
+      }, function (response) {
+        deferred.reject(response.data);
+      });
+
+    return deferred.promise;
+  };
+
+  // Update content of one attribute
+  self.update = function(id, type, name, content) {
+    var deferred = $q.defer();
+
+    $http.put('/api/item/' + encodeURIComponent(id) + '/a/'
+              + encodeURIComponent(type) + '/'
+              + encodeURIComponent(name) + '.json',
+              {content : content})
       .then(function (response) {
         deferred.resolve(response.data);
       }, function (response) {
