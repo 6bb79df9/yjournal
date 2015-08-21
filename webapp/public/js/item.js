@@ -244,8 +244,8 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   var todoList = this;
   todoList.todos = todos;
   todoList.queryStr = "";
-  todoList.folders = [{name : 'inbox', title : 'Inbox', icon : 'inbox'},
-                      {name : 'active', title : 'Active', icon : 'star'},
+  todoList.folders = [{name : 'active', title : 'Active', icon : 'star'},
+                      {name : 'inbox', title : 'Inbox', icon : 'inbox'},
                       {name : 'followup', title : 'Followup', icon : 'calendar'},
                       {name : 'maybe', title : 'Maybe', icon : 'time'}];
 
