@@ -7,135 +7,50 @@
         <i class="glyphicon glyphicon-plus"></i>
     </div>
   </form>
-  <div class="panel panel-primary">
-    <div class="panel-heading">
-      <div class="panel-title">
-        <i class="glyphicon glyphicon-inbox"></i>
-        Inbox
-      </div>
-    </div>
-    <div class="panel-body">
-      <table>
-        <tr ng-repeat="todo in todoList.todos|filter:filterTodo('inbox')">
-          <td style="padding-right:3px">
-            <a ng-click="todoList.remove(todo.id)"
-              class="text-danger glyphicon glyphicon-trash" href="#/todo">
-            </a>
-            <a ng-click="todoList.moveTo(todo.id, 'active')"
-              class="text-success glyphicon glyphicon-star" href="#/todo">
-            </a>
-            <a ng-click="todoList.moveTo(todo.id, 'maybe')"
-              class="text-success glyphicon glyphicon-time" href="#/todo">
-            </a>
-          </td>
-          <td>
-            <a data-toggle="tooltip" title={{todo.time}} href="#/edit/{{todo.id}}">
-              {{todoList.title(todo)}}
-            </a>
-            <span ng-repeat="tag in toArray(todo.attribute.tag)|filter:{name:'!todo'}"
-              class="badge"
-              style="background-color:{{tag.name.colorCode()}};
-              color:{{tag.name.reversedColorCode()}}">
-              {{tag.name}}
-            </span>
-            <a ng-repeat="attachment in todo.attribute.attachment"
-              class="badge"
-              target="_blank"
-              href="/api/item/{{todo.id}}/a/attachment/{{attachment.name}}/c">
-              {{attachment.name}}
-              <i class="glyphicon glyphicon-download-alt"></i>
-            </a>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
 
-  <div class="panel panel-primary">
-    <div class="panel-heading">
-      <div class="panel-title">
-        <i class="glyphicon glyphicon-star"></i>
-        Active
+  <div ng-repeat="folder in todoList.folders">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <div class="panel-title">
+          <i class="glyphicon glyphicon-{{folder.icon}}"></i>
+          {{folder.title}}
+        </div>
       </div>
-    </div>
-    <div class="panel-body">
-      <table>
-        <tr ng-repeat="todo in todoList.todos|filter:filterTodo('active')">
-          <td style="padding-right:3px">
-            <a ng-click="todoList.remove(todo.id)"
-              class="text-danger glyphicon glyphicon-trash" href="#/todo">
-            </a>
-            <a ng-click="todoList.moveTo(todo.id, 'inbox')"
-              class="text-success glyphicon glyphicon-inbox" href="#/todo">
-            </a>
-            <a ng-click="todoList.moveTo(todo.id, 'maybe')"
-              class="text-success glyphicon glyphicon-time" href="#/todo">
-            </a>
-          </td>
-          <td>
-            <a data-toggle="tooltip" title={{todo.time}} href="#/edit/{{todo.id}}">
-              {{todoList.title(todo)}}
-            </a>
-            <span ng-repeat="tag in toArray(todo.attribute.tag)|filter:{name:'!todo'}"
-              class="badge"
-              style="background-color:{{tag.name.colorCode()}};
-              color:{{tag.name.reversedColorCode()}}">
-              {{tag.name}}
-            </span>
-            <a ng-repeat="attachment in todo.attribute.attachment"
-              class="badge"
-              target="_blank"
-              href="/api/item/{{todo.id}}/a/attachment/{{attachment.name}}/c">
-              {{attachment.name}}
-              <i class="glyphicon glyphicon-download-alt"></i>
-            </a>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
-
-  <div class="panel panel-primary">
-    <div class="panel-heading">
-      <div class="panel-title">
-        <i class="glyphicon glyphicon-time"></i>
-        Maybe
+      <div class="panel-body">
+        <table>
+          <tr ng-repeat="todo in todoList.todos|filter:filterTodo(folder.name)">
+            <td style="padding-right:3px">
+              <a ng-click="todoList.remove(todo.id)"
+                class="text-danger glyphicon glyphicon-trash" href="#/todo">
+              </a>
+              <a ng-repeat="toFolder in todoList.folders|filter:filterNonFolder(folder.name)"
+                 ng-click="todoList.moveTo(todo.id, toFolder.name)"
+                 class="text-success glyphicon glyphicon-{{toFolder.icon}}"
+                 style="padding-right:2px"
+                 href="#/todo">
+              </a>
+            </td>
+            <td>
+              <a data-toggle="tooltip" title={{todo.time}} href="#/edit/{{todo.id}}">
+                {{todoList.title(todo)}}
+              </a>
+              <span ng-repeat="tag in toArray(todo.attribute.tag)|filter:{name:'!todo'}"
+                class="badge"
+                style="background-color:{{tag.name.colorCode()}};
+                color:{{tag.name.reversedColorCode()}}">
+                {{tag.name}}
+              </span>
+              <a ng-repeat="attachment in todo.attribute.attachment"
+                class="badge"
+                target="_blank"
+                href="/api/item/{{todo.id}}/a/attachment/{{attachment.name}}/c">
+                {{attachment.name}}
+                <i class="glyphicon glyphicon-download-alt"></i>
+              </a>
+            </td>
+          </tr>
+        </table>
       </div>
-    </div>
-    <div class="panel-body">
-      <table>
-        <tr ng-repeat="todo in todoList.todos|filter:filterTodo('maybe')">
-          <td style="padding-right:3px">
-            <a ng-click="todoList.remove(todo.id)"
-              class="text-danger glyphicon glyphicon-trash" href="#/todo">
-            </a>
-            <a ng-click="todoList.moveTo(todo.id, 'inbox')"
-              class="text-success glyphicon glyphicon-inbox" href="#/todo">
-            </a>
-            <a ng-click="todoList.moveTo(todo.id, 'active')"
-              class="text-success glyphicon glyphicon-star" href="#/todo">
-            </a>
-          </td>
-          <td>
-            <a data-toggle="tooltip" title={{todo.time}} href="#/edit/{{todo.id}}">
-              {{todoList.title(todo)}}
-            </a>
-            <span ng-repeat="tag in toArray(todo.attribute.tag)|filter:{name:'!todo'}"
-              class="badge"
-              style="background-color:{{tag.name.colorCode()}};
-              color:{{tag.name.reversedColorCode()}}">
-              {{tag.name}}
-            </span>
-            <a ng-repeat="attachment in todo.attribute.attachment"
-              class="badge"
-              target="_blank"
-              href="/api/item/{{todo.id}}/a/attachment/{{attachment.name}}/c">
-              {{attachment.name}}
-              <i class="glyphicon glyphicon-download-alt"></i>
-            </a>
-          </td>
-        </tr>
-      </table>
     </div>
   </div>
 </div>

@@ -244,6 +244,10 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   var todoList = this;
   todoList.todos = todos;
   todoList.queryStr = "";
+  todoList.folders = [{name : 'inbox', title : 'Inbox', icon : 'inbox'},
+                      {name : 'active', title : 'Active', icon : 'star'},
+                      {name : 'followup', title : 'Followup', icon : 'calendar'},
+                      {name : 'maybe', title : 'Maybe', icon : 'time'}];
 
   window.document.title = "TODO";
 
@@ -254,6 +258,12 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
           item.attribute.tag != null &&
           item.attribute.tag.todo != null &&
           item.attribute.tag.todo.content === type;
+    };
+  };
+
+  $scope.filterNonFolder = function (name) {
+    return function (folder) {
+      return folder.name != name;
     };
   };
 
