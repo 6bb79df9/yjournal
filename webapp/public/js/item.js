@@ -247,7 +247,8 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   todoList.folders = [{name : 'active', title : 'Active', icon : 'star'},
                       {name : 'inbox', title : 'Inbox', icon : 'inbox'},
                       {name : 'followup', title : 'Followup', icon : 'calendar'},
-                      {name : 'maybe', title : 'Maybe', icon : 'time'}];
+                      {name : 'maybe', title : 'Maybe', icon : 'time'},
+                      {name : 'done', title : 'Done', icon : 'flag'}];
 
   window.document.title = "TODO";
 
