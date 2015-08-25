@@ -254,11 +254,27 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
 
   $scope.filterTodo = function (type) {
     return function (item) {
-      return item != null &&
-          item.attribute != null &&
-          item.attribute.tag != null &&
-          item.attribute.tag.todo != null &&
-          item.attribute.tag.todo.content === type;
+      var todoContent = null;
+      if (item != null
+          && item.attribute != null
+          && item.attribute.tag != null
+          && item.attribute.tag.todo != null) {
+        todoContent = item.attribute.tag.todo.content;
+      }
+
+      var unknownTodoContent = false;
+      if (todoContent != null) {
+        unknownTodoContent = true;
+        for (var i in todoList.folders) {
+          if (todoContent === todoList.folders[i].name) {
+            unknownTodoContent = false;
+            break;
+          }
+        }
+      }
+
+      return (todoContent === type)
+          || (type === 'inbox' && unknownTodoContent);
     };
   };
 
