@@ -33,6 +33,7 @@
   <script src="3pp/ui-codemirror/dist/ui-codemirror.js"></script>
   <script src="3pp/jquery/jquery.min.js"></script>
   <script src="3pp/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="3pp/ui-bootstrap/ui-bootstrap.min.js"></script>
   <title>Y Journal</title>
 </head>
 <body>
