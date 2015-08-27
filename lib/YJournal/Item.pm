@@ -7,6 +7,7 @@ use DateTime;
 use DateTime::Format::ISO8601;
 use YJournal::Attribute;
 use YJournal::Content;
+use Encode qw(decode_utf8 is_utf8);
 
 my $uuid = new Data::UUID;
 
@@ -106,6 +107,8 @@ sub retrieve {
     WHERE item.id=?;
     }, {},
     $id) or die "Item not exists: $id\n";
+  is_utf8($row->{content})
+    or $row->{content} = decode_utf8($row->{content});
   my $item = YJournal::Item->new(
     %$row
   );
@@ -175,7 +178,11 @@ sub query {
       },
       {Slice => {}}) or die "Couldn't load item list: " . $dbh->errstr . "\n";
   }
-  my $items = [map {YJournal::Item->new(%$_);} @$rows];
+  my $items = [map {
+    is_utf8($_->{content})
+      or $_->{content} = decode_utf8($_->{content});
+    YJournal::Item->new(%$_);
+  } @$rows];
 
   for my $type (@$interestedAttrTypes) {
     for my $item (@$items) {

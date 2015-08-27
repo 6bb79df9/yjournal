@@ -16,6 +16,7 @@ prepare_serializer_for_format;
 my $dbname = "yjournal.db";
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbname", "", "")
   or confess ("Couldn't connect to database '$dbname':" . $DBI::errstr);
+$dbh->{sqlite_unicode} = 1;
 YJournal::Content::init($dbh);
 YJournal::Item::init($dbh);
 YJournal::Attribute::init($dbh);

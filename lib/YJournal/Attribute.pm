@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 use YJournal::Content;
+use Encode qw(is_utf8 encode_utf8);
 
 sub init {
   my $dbh = shift;
@@ -64,6 +65,8 @@ sub retrieve {
     $id,
     $type,
     $name) or die "Couldn't load attribute: " . $dbh->errstr . "\n";
+  is_utf8($ret->{content})
+    or $ret->{content} = decode_utf8($ret->{content});
   return {
     id => $id,
     type => $type,
@@ -153,7 +156,7 @@ sub query {
   my $id = shift;
   my $type = shift;
 
-  $dbh->selectall_arrayref(q{
+  my $rows = $dbh->selectall_arrayref(q{
     SELECT
     attribute.id AS id,
     attribute.type AS type,
@@ -167,6 +170,11 @@ sub query {
     {Slice => {}},
     $id,
     $type) or die "Couldn't load attribute list: " . $dbh->errstr . "\n";
+  [map {
+    is_utf8($_->{content})
+      or $_->{content} = decode_utf8($_->{content});
+    $_;
+  } @$rows];
 }
 
 1;
