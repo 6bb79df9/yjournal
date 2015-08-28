@@ -1,4 +1,4 @@
-angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
+angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstrap'])
 
 .config(function($routeProvider) {
   $routeProvider
@@ -39,7 +39,8 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   ;
 })
 
-.controller('ItemListController', function(Items, Attributes, Utils, items) {
+.controller('ItemListController', function($modal,
+                                           Items, Attributes, Utils, items) {
   var itemList = this;
   itemList.items = items;
   itemList.queryStr = "";
@@ -64,16 +65,33 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
 
   // Remove one item
   itemList.remove = function(id) {
-    Items.remove(id)
-      .then(function (data) {
-        for (i in itemList.items ) {
-          if (itemList.items[i].id === id) {
-            itemList.items.splice(i, 1);
-            break;
+    for (var i in itemList.items) {
+      if (itemList.items[i].id === id) {
+        var modalInstance = $modal.open({
+          animation : false,
+          templateUrl : 'DeleteItemConfirm.html',
+          controller : 'DeleteItemConfirmController',
+          resolve : {
+            title : function(){return itemList.title(itemList.items[i]);}
           }
-        }
-      }, function (data) {
-      });
+        });
+        modalInstance.result.then(function (confirmDelete) {
+          if (confirmDelete) {
+            Items.remove(id)
+              .then(function (data) {
+                for (var i in itemList.items ) {
+                  if (itemList.items[i].id === id) {
+                    itemList.items.splice(i, 1);
+                    break;
+                  }
+                }
+              }, function (data) {
+              });
+          }
+        }, function () {
+        });
+      }
+    }
   };
 
   // Query items by FTS
@@ -94,7 +112,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
 })
 
 .controller('ItemEditController', function($scope, $q, $location, $routeParams,
-                                           $window,
+                                           $window, $modal,
                                            Upload, Items, Attributes, Utils, item) {
   var itemEdit = this;
   itemEdit.item = item;
@@ -134,8 +152,8 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   $scope.$on('$locationChangeStart', function (evt) {
     if (!(itemEdit.item.content === itemEdit.savedContent)) {
       if (!window.confirm("Content not saved, leave?")) {
-        evt.preventDefault();
-      }
+      evt.preventDefault();
+        }
     }
   });
 
@@ -240,7 +258,8 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   itemEdit.updateTitle();
 })
 
-.controller('TodoListController', function($scope, Items, Attributes, Utils, todos) {
+.controller('TodoListController', function($scope, $modal,
+                                           Items, Attributes, Utils, todos) {
   var todoList = this;
   todoList.todos = todos;
   todoList.queryStr = "";
@@ -315,16 +334,34 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
 
   // Remove one todo
   todoList.remove = function(id) {
-    Items.remove(id)
-      .then(function (data) {
-        for (i in todoList.todos ) {
-          if (todoList.todos[i].id === id) {
-            todoList.todos.splice(i, 1);
-            break;
+    for (var i in todoList.todos) {
+      if (todoList.todos[i].id === id) {
+        var title = todoList.title(todoList.todos[i]);
+        var modalInstance = $modal.open({
+          animation : false,
+          templateUrl : 'DeleteItemConfirm.html',
+          controller : 'DeleteItemConfirmController',
+          resolve : {
+            title : function(){return title;}
           }
-        }
-      }, function (data) {
-      });
+        });
+        modalInstance.result.then(function (confirmDelete) {
+          if (confirmDelete) {
+            Items.remove(id)
+              .then(function (data) {
+                for (i in todoList.todos ) {
+                  if (todoList.todos[i].id === id) {
+                    todoList.todos.splice(i, 1);
+                    break;
+                  }
+                }
+              }, function (data) {
+              });
+          }
+        }, function () {
+        });
+      }
+    }
   };
 
   // Move todo to another folder
@@ -510,6 +547,21 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload'])
   self.title = function (content) {
     var m = content.match(/^\s*([^\r\n]+)/);
     return m == null ? "<UNTITLED>" : m[0];
+  };
+})
+
+.controller('DeleteItemConfirmController', function($scope, $modalInstance,
+                                                    title) {
+  var self = this;
+
+  $scope.title = title;
+
+  $scope.delete = function () {
+    $modalInstance.close(true);
+  };
+
+  $scope.cancel = function () {
+    $modalInstance.close(false);
   };
 })
 
