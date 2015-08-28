@@ -31,7 +31,7 @@
       <div class="panel-body">
         <table>
           <tr ng-repeat="todo in todoList.todos|filter:filterTodo(folder.name)">
-            <td style="padding-right:3px">
+            <td style="padding-right:3px;white-space:nowrap">
               <a ng-click="todoList.remove(todo.id)"
                 class="text-danger glyphicon glyphicon-trash" href="#/todo">
               </a>
