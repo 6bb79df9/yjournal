@@ -13,7 +13,7 @@ our $VERSION = '0.1';
 prepare_serializer_for_format;
 
 # Initialize database
-my $dbname = "yjournal.db";
+my $dbname = config->{dbname} || "yjournal.db";
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbname", "", "")
   or confess ("Couldn't connect to database '$dbname':" . $DBI::errstr);
 $dbh->{sqlite_unicode} = 1;
