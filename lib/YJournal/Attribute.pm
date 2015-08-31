@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 use YJournal::Content;
-use Encode qw(is_utf8 encode_utf8);
+use Encode qw(is_utf8 decode_utf8);
 
 sub init {
   my $dbh = shift;
