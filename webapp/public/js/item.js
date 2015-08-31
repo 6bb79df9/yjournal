@@ -267,7 +267,8 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
                       {name : 'inbox', title : 'Inbox', icon : 'inbox'},
                       {name : 'followup', title : 'Followup', icon : 'calendar'},
                       {name : 'maybe', title : 'Maybe', icon : 'time'},
-                      {name : 'done', title : 'Done', icon : 'flag'}];
+                      {name : 'done', title : 'Done', icon : 'flag'},
+                      {name : 'archive', title : 'Archive', icon : 'file'}];
 
   window.document.title = "TODO";
 
