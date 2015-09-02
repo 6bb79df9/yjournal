@@ -11,6 +11,15 @@
   </div>
 </script>
 <div>
+  <form ng-submit="todoList.query()">
+    <div class="input-group">
+      <input ng-model="todoList.queryStr" type="text" class="form-control"
+      placeholder="Query string ...">
+      <span ng-click="todoList.query()" class="input-group-addon">
+        <i class="glyphicon glyphicon-search"></i>
+      </span>
+    </div>
+  </form>
   <form ng-submit="todoList.add()">
     <div class="input-group">
       <input ng-model="todoList.content" type="text" class="form-control"
