@@ -126,14 +126,16 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
   });
 
   $scope.upload = function (files) {
-    Upload.upload({
-      url : '/api/item/' + encodeURIComponent(itemEdit.item.id) + '/a/attachment.json',
-      fileFormDataName : 'content',
-      file : files
-    }).progress(function (evt) {
-    }).success(function (data, status, headers, config) {
-      itemEdit.item.attribute.attachment[data.name] = data;
-    }).error(function (data, status, headers, config) {
+    angular.forEach(files, function (file) {
+      Upload.upload({
+        url : '/api/item/' + encodeURIComponent(itemEdit.item.id) + '/a/attachment.json',
+        fileFormDataName : 'content',
+        file : file
+      }).progress(function (evt) {
+      }).success(function (data, status, headers, config) {
+        itemEdit.item.attribute.attachment[data.name] = data;
+      }).error(function (data, status, headers, config) {
+      });
     });
   };
 
