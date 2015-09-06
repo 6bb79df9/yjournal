@@ -33,6 +33,15 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
       }
     }
   })
+  .when('/todo/qa', {
+    controller : "TodoListController as todoList",
+    templateUrl : "todoQuickAdd.html",
+    resolve : {
+      todos : function (Items) {
+        return [];
+      }
+    }
+  })
   .otherwise({
     redirectTo : "/"
   })

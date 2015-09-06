@@ -1,0 +1,9 @@
+<form ng-submit="todoList.add()">
+  <div class="input-group">
+    <input ng-model="todoList.content" type="text" class="form-control"
+    placeholder="Quick add ..." style="width:100%" autofocus>
+    <span ng-click="todoList.add()" class="input-group-addon">
+      <i class="glyphicon glyphicon-plus"></i>
+    </span>
+  </div>
+</form>
