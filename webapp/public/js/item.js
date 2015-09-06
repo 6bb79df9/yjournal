@@ -26,6 +26,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
     controller : "TodoListController as todoList",
     templateUrl : "todo.html",
     resolve : {
+      title : function () { return "TODO";},
       todos : function (Items) {
         return Items.query({
           atypes : ['tag', 'attachment'],
@@ -37,6 +38,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
     controller : "TodoListController as todoList",
     templateUrl : "todoQuickAdd.html",
     resolve : {
+      title : function () { return "Quick add TODO";},
       todos : function (Items) {
         return [];
       }
@@ -270,7 +272,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
 })
 
 .controller('TodoListController', function($scope, $modal,
-                                           Items, Attributes, Utils, todos) {
+                                           Items, Attributes, Utils, todos, title) {
   var todoList = this;
   todoList.todos = todos;
   todoList.queryStr = "";
@@ -281,7 +283,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
                       {name : 'done', title : 'Done', icon : 'flag'},
                       {name : 'archive', title : 'Archive', icon : 'file'}];
 
-  window.document.title = "TODO";
+  window.document.title = title;
 
   $scope.filterTodo = function (type) {
     return function (item) {
