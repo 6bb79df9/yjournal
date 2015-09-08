@@ -271,7 +271,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
   itemEdit.updateTitle();
 })
 
-.controller('TodoListController', function($scope, $modal,
+.controller('TodoListController', function($scope, $modal, $filter,
                                            Items, Attributes, Utils, todos, title) {
   var todoList = this;
   todoList.todos = todos;
@@ -413,6 +413,11 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
   // Toggle visibility of a folder body
   $scope.toggleFolderBody = function (folder) {
     folder.hide = !folder.hide;
+  };
+
+  // Return number of items in folder
+  $scope.itemsInFolder = function (folder) {
+    return $filter('filter')(todoList.todos, $scope.filterTodo(folder.name)).length;
   };
 })
 

@@ -32,11 +32,12 @@
 
   <div ng-repeat="folder in todoList.folders">
     <div class="panel panel-primary">
-      <div class="panel-heading" style="cursor:pointer">
-        <div class="panel-title" ng-click="toggleFolderBody(folder)">
+      <div class="panel-heading" style="cursor:pointer" ng-click="toggleFolderBody(folder)">
+        <span class="panel-title">
           <i class="glyphicon glyphicon-{{folder.icon}}"></i>
           {{folder.title}}
-        </div>
+        </span>
+        <span class="badge pull-right">{{itemsInFolder(folder)}}</span>
       </div>
       <div class="panel-body" ng-hide="folder.hide">
         <table>
