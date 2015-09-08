@@ -26,6 +26,7 @@
   <script src="3pp/codemirror/dist/mode/meta.js"></script>
   <script src="3pp/codemirror/dist/mode/markdown/markdown.js"></script>
   <script src="3pp/codemirror/dist/mode/gfm/gfm.js"></script>
+  <script src="3pp/codemirror/dist/mode/sql/sql.js"></script>
   <script src="3pp/codemirror/dist/mode/javascript/javascript.js"></script>
   <script src="3pp/codemirror/dist/mode/clike/clike.js"></script>
   <script src="3pp/codemirror/dist/mode/haskell/haskell.js"></script>
