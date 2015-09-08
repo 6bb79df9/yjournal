@@ -32,13 +32,13 @@
 
   <div ng-repeat="folder in todoList.folders">
     <div class="panel panel-primary">
-      <div class="panel-heading">
-        <div class="panel-title">
+      <div class="panel-heading" style="cursor:pointer">
+        <div class="panel-title" ng-click="toggleFolderBody(folder)">
           <i class="glyphicon glyphicon-{{folder.icon}}"></i>
           {{folder.title}}
         </div>
       </div>
-      <div class="panel-body">
+      <div class="panel-body" ng-hide="folder.hide">
         <table>
           <tr ng-repeat="todo in todoList.todos|filter:filterTodo(folder.name)">
             <td style="padding-right:3px;white-space:nowrap">

@@ -276,12 +276,12 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
   var todoList = this;
   todoList.todos = todos;
   todoList.queryStr = "";
-  todoList.folders = [{name : 'active', title : 'Active', icon : 'star'},
-                      {name : 'inbox', title : 'Inbox', icon : 'inbox'},
-                      {name : 'followup', title : 'Followup', icon : 'calendar'},
-                      {name : 'maybe', title : 'Maybe', icon : 'time'},
-                      {name : 'done', title : 'Done', icon : 'flag'},
-                      {name : 'archive', title : 'Archive', icon : 'file'}];
+  todoList.folders = [{name : 'active', title : 'Active', icon : 'star', hide : false},
+                      {name : 'inbox', title : 'Inbox', icon : 'inbox', hide : false},
+                      {name : 'followup', title : 'Followup', icon : 'calendar', hide : false},
+                      {name : 'maybe', title : 'Maybe', icon : 'time', hide : true},
+                      {name : 'done', title : 'Done', icon : 'flag', hide : true},
+                      {name : 'archive', title : 'Archive', icon : 'file', hide : true}];
 
   window.document.title = title;
 
@@ -408,6 +408,11 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
       todoList.todos = todos;
     }, function (error) {
     });
+  };
+
+  // Toggle visibility of a folder body
+  $scope.toggleFolderBody = function (folder) {
+    folder.hide = !folder.hide;
   };
 })
 
