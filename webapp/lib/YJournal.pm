@@ -157,4 +157,20 @@ get '/api/item/:id/a/:type.:format' => sub {
   };
 };
 
+get '/api/system/db/pack.:format' => sub {
+  my $oldSize = (stat $dbname)[7];
+  db sub {
+    $dbh->do(q{
+        DELETE FROM content
+        WHERE (SELECT COUNT(*) FROM item WHERE item.cid=content.id) = 0
+          AND (SELECT COUNT(*) FROM attribute WHERE attribute.cid=content.id) = 0;
+      }) or die $dbh->errstr;
+  };
+  $dbh->do(q{VACUUM}) or die $dbh->errstr;
+  {
+    oldSize => $oldSize,
+    newSize => (stat $dbname)[7],
+  };
+};
+
 true;
