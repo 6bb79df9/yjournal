@@ -43,12 +43,17 @@
           <tr ng-repeat="todo in todoList.todos|filter:filterTodo(folder.name)">
             <td style="padding-right:3px;white-space:nowrap">
               <a ng-click="todoList.remove(todo.id)"
-                class="text-danger glyphicon glyphicon-trash" href="#/todo">
+                class="text-danger glyphicon glyphicon-trash"
+                 data-toggle="tooltip"
+                 title="Remove"
+                href="#/todo">
               </a>
               <a ng-repeat="toFolder in todoList.folders|filter:filterNonFolder(folder.name)"
                  ng-click="todoList.moveTo(todo.id, toFolder.name)"
                  class="text-success glyphicon glyphicon-{{toFolder.icon}}"
                  style="padding-right:2px"
+                 data-toggle="tooltip"
+                 title="Move to '{{toFolder.title}}'"
                  href="#/todo">
               </a>
             </td>
