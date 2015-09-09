@@ -40,7 +40,7 @@ sub new {
   }
   my $self = sub {
     my $m = shift;
-    @_ and $obj->{m} = shift;
+    @_ and $obj->{$m} = shift;
     $obj->{$m};
   };
   bless $self, $class;
