@@ -19,6 +19,22 @@ sub init {
     PRIMARY KEY(id, type, name)
     );
     }) or die "Couldn't create attribute table" . $dbh->errstr . "\n";
+  $dbh->do(q{
+    CREATE INDEX IF NOT EXISTS idx_attribute_type
+    ON attribute(type);
+    }) or die "Couldn't create index on attribute type" . $dbh->errstr . "\n";
+  $dbh->do(q{
+    CREATE INDEX IF NOT EXISTS idx_attribute_name
+    ON attribute(name);
+    }) or die "Couldn't create index on attribute name" . $dbh->errstr . "\n";
+  $dbh->do(q{
+    CREATE INDEX IF NOT EXISTS idx_attribute_ctype
+    ON attribute(ctype);
+    }) or die "Couldn't create index on attribute content type" . $dbh->errstr . "\n";
+  $dbh->do(q{
+    CREATE INDEX IF NOT EXISTS idx_attribute_cid
+    ON attribute(cid);
+    }) or die "Couldn't create index on attribute content id" . $dbh->errstr . "\n";
 }
 
 sub create {

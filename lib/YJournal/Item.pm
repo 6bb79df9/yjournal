@@ -21,6 +21,14 @@ sub init {
     PRIMARY KEY(id)
     );
     }) or die "Couldn't create item table:" . $dbh->errstr . "\n";
+  $dbh->do(q{
+    CREATE INDEX IF NOT EXISTS idx_item_time
+    ON item(time);
+    }) or die "Couldn't create index on time:" . $dbh->errstr . "\n";
+  $dbh->do(q{
+    CREATE INDEX IF NOT EXISTS idx_item_cid
+    ON item(cid);
+    }) or die "Couldn't create index on content id" . $dbh->errstr . "\n";
 }
 
 sub new {
