@@ -1,0 +1,10 @@
+[Unit]
+Description=YJournal web server(PROFNAME)
+
+[Service]
+Type=simple
+WorkingDirectory=__DBDIR__
+ExecStart=/bin/sh -c "sudo -u http PERL5LIB=__PERL5LIB__ __PLACKUP__ -s Starman --workers=8 -a __PWD__/bin/yjs --port=PORT -l __DBDIR__/unix.sock"
+
+[Install]
+WantedBy=multi-user.target

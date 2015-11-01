@@ -1,0 +1,27 @@
+#!/bin/sh
+# vim:ft=sh
+
+if test $# -ne 2; then
+  echo "Usage:"
+  echo "  $0 SERVICE_PROFILE_NAME PORT"
+fi
+PROFNAME="$1"
+echo "Profile name '$PROFNAME'"
+PORT="$2"
+echo "Port '$PORT'"
+DBDIR="/var/db/yjournal-$PROFNAME"
+
+TEMPFILE=`mktemp`
+echo "Temporary file '$TEMPFILE'"
+
+sudo mkdir -p "$DBDIR"
+sudo chown http:http "$DBDIR"
+
+sed -e "s/PROFNAME/$PROFNAME/g" \
+  -e "s/PORT/$PORT/g" \
+  -e "s|__DBDIR__|$DBDIR|g" \
+  -e "s|__PERL5LIB__|$PERL5LIB|g" \
+  -e "s|__PLACKUP__|`which plackup`|g" \
+  -e "s|__PWD__|`pwd`|g" \
+  <yjournal.service >"$TEMPFILE"
+sudo cp "$TEMPFILE" "/etc/systemd/system/yjournal-${PROFNAME}.service"
