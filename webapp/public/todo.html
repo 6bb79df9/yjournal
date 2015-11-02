@@ -59,7 +59,9 @@
               </a>
             </td>
             <td>
-              <a data-toggle="tooltip" title={{todo.time}} href="#/edit/{{todo.id}}">
+              <a data-toggle="tooltip" title={{todo.time}}
+                target="_blank"
+                href="#/edit/{{todo.id}}">
                 {{todoList.title(todo)}}
               </a>
               <span ng-repeat="tag in toArray(todo.attribute.tag)|filter:{name:'!todo'}"
