@@ -161,7 +161,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
     itemEdit.updateTitle();
   });
 
-  // Hook for page close event
+  // Hook for page/window close event
   $scope.$on('$locationChangeStart', function (evt) {
     if (!(itemEdit.item.content === itemEdit.savedContent)) {
       if (!window.confirm("Content not saved, leave?")) {
@@ -169,6 +169,11 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
         }
     }
   });
+  $window.onbeforeunload = function () {
+    if (!(itemEdit.item.content === itemEdit.savedContent)) {
+      return "Content not saved, leave?";
+    }
+  };
 
   // Save content of current journal item
   itemEdit.save = function() {
