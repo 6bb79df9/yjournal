@@ -5,6 +5,7 @@ use warnings;
 use DateTime;
 use File::Temp qw(tempfile);
 use Test::More;
+use Try::Tiny;
 
 # {{{ Helper functions
 sub timeEq {
@@ -15,7 +16,6 @@ sub timeEq {
 # }}}
 
 require_ok('YJournal::Item');
-require_ok('YJournal::DB');
 
 # {{{ New note with default attributes
 {
@@ -37,7 +37,11 @@ require_ok('YJournal::DB');
   my $content = "test content";
   my ($f, $dbname) = tempfile(SUFFIX => '.db');
   close $f;
-  my $dbh = YJournal::DB::init($dbname);
+  my $dbh = DBI->connect("dbi:SQLite:dbname=$dbname");
+  $dbh->{sqlite_unicode} = 1;
+  YJournal::Content::init($dbh);
+  YJournal::Item::init($dbh);
+  YJournal::Attribute::init($dbh);
 
   my $item = YJournal::Item::create($dbh, content => $content);
   ok $item->content eq $content, "Created has given content";
@@ -54,8 +58,12 @@ require_ok('YJournal::DB');
 
   my $deleted = YJournal::Item::delete($dbh, $item->id);
   ok $deleted, "Note deleted";
-  my $nothing = YJournal::Item::retrieve($dbh, $item->id);
-  ok !defined($nothing), "Note doesn't exist:$nothing";
+  try {
+    YJournal::Item::retrieve($dbh, $item->id);
+    ok 0, "Note shouldn't exist";
+  } catch {
+    ok 1, "Note shouldn't exist";
+  };
 
   $dbh->disconnect;
   unlink $dbname;
