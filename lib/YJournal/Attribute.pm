@@ -47,7 +47,7 @@ sub create {
 
   my $cid = YJournal::Content::save($dbh, $content);
   $dbh->do(q{
-    INSERT INTO attribute(id, type, name, ctype, cid)
+    INSERT OR REPLACE INTO attribute(id, type, name, ctype, cid)
     VALUES(?, ?, ?, ?, ?);
     }, {},
     $id,
