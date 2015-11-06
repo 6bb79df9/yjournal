@@ -191,7 +191,11 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
     Items.update(itemEdit.item.id, itemEdit.item.content)
       .then(function (data) {
         itemEdit.savedContent = itemEdit.item.content;
-        $window.history.back();
+        if ($window.history.length > 1) {
+          $window.history.back();
+        } else {
+          $window.close();
+        }
       }, function(data) {
       }, function (data) {
       });
