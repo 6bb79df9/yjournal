@@ -11,6 +11,9 @@
       border: 1px solid #eee;
       height: 100%;
     }
+    .CodeMirror .cm-spellerror {
+      background: red;
+    }
   </style>
   <script src="3pp/angular/angular.min.js"></script>
   <script src="3pp/angular/angular-resource.min.js"></script>
@@ -35,6 +38,7 @@
   <script src="3pp/jquery/jquery.min.js"></script>
   <script src="3pp/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="3pp/ui-bootstrap/ui-bootstrap.min.js"></script>
+  <script src="3pp/typo/typo.js"></script>
   <title>Y Journal</title>
 </head>
 <body>

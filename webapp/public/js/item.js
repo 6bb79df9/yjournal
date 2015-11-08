@@ -253,12 +253,35 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
     itemEdit.removeAttr('attachment', name)
   };
 
+  var _typo = new Typo("en_US", null, null, {
+    dictionaryPath : '/3pp/typo/dictionaries/'
+  });
+  var rxWord = /^[a-zA-Z0-9]+/;
+  CodeMirror.defineMode("text/x-gfm-spellcheck", function (config, parserConfig) {
+    var overlay = {
+      token : function (stream, state) {
+        if (stream.match(rxWord) && _typo && !_typo.check(stream.current())) {
+          return "spellerror";
+        }
+        while (stream.next() != null) {
+          if (stream.match(rxWord, false))
+            return null;
+        }
+        return null;
+      }
+    };
+
+    var mode = CodeMirror.getMode(config,
+                                  parserConfig.backdrop || "text/x-gfm");
+
+    return CodeMirror.overlayMode(mode, overlay);
+  });
   $scope.cmOptions = {
     lineWrapping : true,
     lineNumbers : true,
     keyMap : 'vim',
     tabSize : 2,
-    mode : 'text/x-gfm',
+    mode : 'text/x-gfm-spellcheck',
     theme : 'solarized dark',
     electricChars : false,
     autofocus : true,
