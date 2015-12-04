@@ -253,6 +253,7 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
     itemEdit.removeAttr('attachment', name)
   };
 
+  var typoEnabled = false;
   var _typo = new Typo("en_US", null, null, {
     dictionaryPath : '/3pp/typo/dictionaries/'
   });
@@ -260,11 +261,11 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
   CodeMirror.defineMode("text/x-gfm-spellcheck", function (config, parserConfig) {
     var overlay = {
       token : function (stream, state) {
-        if (stream.match(rxWord) && _typo && !_typo.check(stream.current())) {
+        if (typoEnabled && stream.match(rxWord) && _typo && !_typo.check(stream.current())) {
           return "spellerror";
         }
         while (stream.next() != null) {
-          if (stream.match(rxWord, false))
+          if (typoEnabled && stream.match(rxWord, false))
             return null;
         }
         return null;
@@ -295,6 +296,14 @@ angular.module('item', ['ngRoute', 'ui.codemirror', 'ngFileUpload', 'ui.bootstra
       });
       CodeMirror.Vim.defineEx("q", "", function(cm) {
         itemEdit.quit();
+      });
+      CodeMirror.Vim.defineEx("spell", "", function(cm) {
+        typoEnabled = true;
+        cm.refresh();
+      });
+      CodeMirror.Vim.defineEx("nospell", "", function(cm) {
+        typoEnabled = false;
+        cm.refresh();
       });
     }
   };
